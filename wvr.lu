@@ -1,0 +1,5 @@
+X wvr P = X @ L
+where
+ K = if P then # else next K fi;
+ L = first K fby K @ L+1;
+end

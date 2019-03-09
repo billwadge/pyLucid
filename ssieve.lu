@@ -1,0 +1,12 @@
+init s
+where
+ n2 = 2 sby n2+1;
+ s = n2 fby er(s);
+ er(x) = swvr(x, x mod init x ne 0);
+ swvr(y,q) = y atspace I
+             where
+               K = if q then sindex else succ K fi;
+               I = K sby K atspace I + 1;
+             end;
+ rows = 20;
+end

@@ -1,0 +1,16 @@
+wvr(X_,P_) = X_ attime I_
+             where
+               K_ = if P_ then index else next K_ fi;
+               I_ = K_ fby K_ attime I_ + 1;
+             end;
+             
+while(Y_,Q_) = if R_ then Y_ else eod fi
+                where
+                 R_ = Q_ fby R_ and next Q_;
+                end;
+                
+swvr(Z_,R_) = Z_ atspace J_
+             where
+               L_ = if R_ then sindex else succ L_ fi;
+               J_ = L_ sby L_ atspace J_ + 1;
+             end;

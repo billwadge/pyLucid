@@ -1,0 +1,7 @@
+sin x
+where
+ term = 1 fby x*term/n;
+ n = 1 fby n+1;
+ sum = 0 fby sum+term;
+ x = 0.693147;
+end

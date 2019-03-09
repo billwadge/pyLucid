@@ -1,0 +1,10 @@
+tot(t)
+where
+ int(x) = tot((x + next x)*dx/2);
+ dx = 0.05;
+ t = dx*index;
+ tot(k) = s where s = s -k ybf 0 fby s+k; end;
+ columns = 3;
+ rows = 30;
+ numformat = '%7.4f';
+end

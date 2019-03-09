@@ -1,0 +1,8 @@
+w
+where
+ A  = 2 fby A+1;
+ w = A attime I;
+ K = if P then index else next K fi;
+ I = K fby K attime I + 1;
+ P = A mod first A ne 0;
+ end

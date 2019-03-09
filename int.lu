@@ -1,0 +1,18 @@
+(s sby sin t sby s - sin t sby eos) wvr index mod 100 eq 0
+where
+ int(x) = s 
+          where
+           s = 0 fby s + first(dt)*x; 
+           px = x fby x;
+          end;
+ ex =1+int(ex);
+ s = int(c); c = 1+int(0-s);
+ lg = 1+int(1/(1+t));
+ t = index*dt;
+ y = 1+int(0-y*y);
+ dt = 0.001;
+ columns = 3;
+ rows = 30;
+ numformat = '%6.4f';
+end
+

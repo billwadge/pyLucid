@@ -1,0 +1,1 @@
+sumfor I in S:P all E endfor

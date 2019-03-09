@@ -1,0 +1,50 @@
+4*(peval(atanx,1/2)+peval(atanx,1/3))
+where
+rtxp1 = pinteg(1,pdiv(one,rtxp1)*0.5);
+lnxp1 = pinteg(0,pdiv(one,one+x));
+x2 = 0 sby 0 sby 1 sby 0;
+atanx = pinteg(0,pdiv(one,one+x2));
+one = 1 sby 0;
+x = 0 sby 1 sby 0;
+ex = pinteg(1,ex);
+sinx = pinteg(0,cosx);
+cosx = pinteg(1,0-sinx);
+
+peval(p,a) = v
+where
+ v = init p +(0 sby a * peval(succ p, a));
+end;
+
+pprod(a,b) = c
+ where
+  a0 = init a;b0 = init b;
+  ap = succ a;bp = succ b;
+  c0 = a0*b0;
+  c =  (c0 sby (a0*bp + b0*ap)) + (0 sby 0 sby pprod(ap,bp));
+ end;
+ 
+pdiv(q,w) = t
+where
+ q0 = init q;
+ w0 = init w;
+ r = q0/w0;
+ v = succ(q - r*w);
+ t = r sby pdiv(v,w);
+end;
+
+pderiv(g) = h
+ where
+  gp = succ  g;
+  k = 1 sby k+1;
+  h = gp*k;
+ end;
+ 
+pinteg(c,s) = d where
+ i = 1 sby i+1;
+ d = c sby s/i; 
+end;
+
+columns = 20;
+rows = 1;
+numformat = '%8.6f';
+end

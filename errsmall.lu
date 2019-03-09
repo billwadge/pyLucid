@@ -1,0 +1,12 @@
+sv(E)
+where
+ E  = 2 fby E+1;
+ whri(X,P) = X attime I
+             where
+               K = if P then index else next K fi;
+               I = K fby K attime I + 1;
+             end;
+ whrr(X,P) = if first P then first X fby whrr(next X, next P) else
+                     whrr(next X, next P) fi;
+ sv(A) = A fby sv(whri(A, A mod first A ne 0));
+ end
