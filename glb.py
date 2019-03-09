@@ -4,17 +4,17 @@ from  exp import *
 
 def Gprogram(pg):
     """ globalize program pg, a where clause """
-    subj, body = WhereD(pg)
+    subj, wk,body = WhereD(pg)
     gbody = pop.ConsAll(body,Gdef)
-    return WhereC(subj,gbody)
+    return WhereC(subj,wk,gbody)
     
 def Gdef(d):
     """ globalize definition d """
     if VarDefinitionP(d): #simple var definition
         return d #nothing to do
-    fun, formals, rhs = FunDefinitionD(d)
+    fun, formals,es, rhs = FunDefinitionD(d)
     grhs = Gterm(rhs,formals)
-    return FunDefinitionC(fun,formals,grhs)
+    return FunDefinitionC(fun,formals,es,grhs)
     
 def Gterm(t,formals):
     """ apply globals to all nonformals in t"""

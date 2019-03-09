@@ -1,0 +1,12 @@
+[%prime,next prime %] wvr prime+2 eq next prime
+where
+ prime = 2 fby N wvr  Nprime;
+ N = 3 fby N+2;
+ Nprime = p
+  whereloop
+   n is current N;
+   k = prime asa n mod prime eq 0 or prime*prime >n;
+   p = k*k>n;
+  end;
+ rows = 200;
+end

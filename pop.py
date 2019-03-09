@@ -195,7 +195,7 @@ def AppendAll(l,f):
     return res
     
 def ConsAll(l,f):
-    """ run down l applying f and consing the results (map) """
+    """ run down l applying f and consing the results (FDemem) """
     m = Empty
     while l != Empty:
         h,l = DeCons(l)
@@ -232,7 +232,7 @@ def List2(a,b):
     """a list of length 2"""
     return Cons(a,List1(b))
     
-def DeList2(l):
+def List2D(l):
     return El1(l),El2(l)
     
 def List3(a,b,c):
@@ -523,8 +523,11 @@ CALLWord = WordC("call")
 YCALLWord = WordC("ycall")
 ACTUALWord = WordC("actual")
 GLOBALWord = WordC("global")
+ACTIVEWord = WordC("active")
+CONTEMPWord = WordC("contemp")
 WHEREWord = WordC("where")
 WHERELOOPWord = WordC("whereloop")
+ISWord = WordC("is")
 ENDWord = WordC("end")
 EQUALWord = WordC("=")
 SEMICOLONWord = WordC(";")

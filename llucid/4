@@ -1,0 +1,148 @@
+.SP 7
+.SH
+4. DIMENSIONAL SHIFTING
+.PP
+There is, however, a more sensible way to use hyperstreams.
+There is no real need to have an endless supply of dimension
+shifting operations, one for each new form of subcomputation
+interface we devise. The variation in interfaces can be obtained
+using a number of simpler operations which take
+$$t1& into account but do not alter dimension.  The function
+@Latest may be the simplest dimension altering operation but it is not
+general. The function @Latest is associated with
+one form of inner/outer interface,
+namely total suspension of the outer computation (nesting). 
+What we need is another subcomputation entering
+primitive that does not have any !!a priori& commitment to any
+particular kind of interface.
+.PP
+There is indeed such a function, which we call @Active&.
+It is defined as follows:
+.EQ
+  Active(x) sub t0 z t1 t2 ... ~=~ 
+    x sub t0,t1,t2...
+.EN
+Simple manipulations with time parameters will verify that
+.PH
+  Contemp(Active(x)) = x;
+.PE
+The meaning of @Active& can best be grasped if we assume that
+the value of @x is independent of $$t1&, $$t2&, $$t sub 3&
+and so on;
+in other words, that @x is 'really' just a sequence of the form
+.EQ
+ <x0, x1, x2, ... >.
+.EN
+In this case the value of @Active(x) depends only on $$t0& and
+$$t1& and is 'really' the double sequence
+.EQ
+ <<x0,x1,x2,...>,
+  <x0,x1,x2,...>,
+  <x0,x1,x2,...>,...>.
+.EN
+and this can be interpreted as follows: the value of @x
+inside the computation is the same !stream as outside; on
+each invocation it is restarted and runs through its
+complete set of values.  The variable is !Active inside
+the subcomputation.
+By comparison, the value of
+@Latest(x) can be thought of in the same way as the double
+sequence
+.EQ
+  <<x0,x0,x0,...>,
+   <x1,x1,x1,...>,
+   <x2,x2,x2,...>,...>
+.EN
+so that throughout each subcomputation it is constantly the
+outer individual !value of @x.  The operation @Contemp&, can
+also be understood in terms of double sequences.
+Informally speaking, it
+collapses a double sequence into a single sequence by sampling.
+It turns
+.EQ
+  <a0,a1,a2,...>,
+  <b0,b1,b2,...>,
+  <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+ <a0,b1,c2,...>.  
+.EN
+(In this way it is easy to see why Contemp(Active(x)) is the same as @x&).
+.PP
+The function @Active in a sense gives nesting without freezing.
+If we want freezing as well, we need another function to do it
+(but this function does not have to change dimensions).
+The obvious name for the new function is @Current; 
+to find out how @Current works, we need to solve the equation
+@@Current(Active(x)) = Latest(x)&. It is not hard to deduce that;
+the required definition is
+.EQ
+  Current(y) sub t0,t1,t2... ~=~ 
+  y sub t1 t1 t2 t sub 3 ...
+.EN
+In terms of double sequences, @Current transforms
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a0,a0,...>,
+   <b1,b1,b1,...>,
+   <c2,c2,c2,...>,...>.
+.EN
+In the same way the 'from now on' effect can be obtained
+with the function Remaining where
+.EQ
+  Remaining(x) sub t0,t1,t2... ~=~ 
+  x sub (t1+t0) t1 t2 ....
+.EN
+The function Remaining  transforms the sequence
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a1,a2,...>,
+   <b1,b2,b3,...>,
+   <c2,c3,c4,...>,...>
+.EN
+and it is easily verified that  @@Remaining(Active(x)) = restof(x)&.
+.PP
+Here are two simple $Iswim(Llu(A)) programs which use this
+explicit algebraic approach to specifying subcomputations
+.PR
+ Contemp( y asa y > n)
+   where
+     n = Current Active n;
+     y = Remaining Active  x;
+   end
+   
+ Contemp( maxsofar eq Current Active p)
+   where
+     maxsofar = Active(p) fby if maxsofar > Active p;
+                            then maxsofar else Active p fi
+   end
+.PE
+The first finds the first-encountered present or future
+value of @x which is greater than the present (Current) value
+of @n. The second tests if the Current value of @p is the greatest
+so far.
+.PP
+These various strange operations on hyperstreams (we could call them
+!hyperfilters) may seem rather far fetched.  
+We can still think of programs using hyperfilters in terms of
+pipeline dataflow, but a realistic implementation along those
+lines could be very complicated. 
+Fortunately, however, hyperstreams and hyperfilters
+are quite simple from the tagged-dataflow point of view.
+The pLucid interpreter already handles multidimensional 'time tags';
+with very little work it could be made accept programs with hyperfilters.
+There is therefore much to be gained by extending Lucid with hyperstreams.
+We could greatly increase the power and simplicity of the language,
+without at the same time greatly increasing the complexity of the
+implementation.

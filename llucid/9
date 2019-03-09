@@ -1,0 +1,142 @@
+.SP 14
+.SH
+9. NESTED 'I/O' WITH HYPERFILTERS
+.PP
+The need for nonstandard computation/subcomputation
+interfaces arise often and naturally when programming in Lucid.  
+In Llucid we can specify these interfaces more directly.  
+For example, often we want a
+subcomputation to process an initial segment of a stream
+then on the next subcomputation pick up where it left off 
+as in the case of lexical analysis mentioned earlier).
+As a simpler example, suppose that 
+we have a stream of nonnegative integers and we want to
+produce for each 0 a sum of all integers encountered since the
+last 0; so that
+.EQ
+ 2, 4, 0, 6, 0, 0, 5, 4, 7, 8, 0, ...
+.EN
+should be transformed into
+.EQ
+ 6, 6, 0, 24, ... .
+.EN
+In ordinary Lucid we must simulate such interfaces with @whenever
+and @upon&; as in
+.PR
+ sum wvr n eq 0
+  where
+   sum = 0 fby if n ne 0 then sum+n else 0 fi;
+  end
+.PE
+In LLucid we can do this more directly:
+.PR
+ sum asa y eq 0
+  where
+   sum = 0 fby sum+y;
+   y = x Fby y after y eq 0;
+  end
+.PE
+Here @after is a conventional Lucid function (used as an infix operator)
+which delivers all the values of its first operand which appears
+!after the second is true for the first time; it has the
+definition
+.PH
+ y after p = if first p then next y  else (next y) after next p;
+.PE
+As another example, suppose that as before we are required
+to produce a stream of sums, but that now instead of
+!terminating each group of summands with a 0, the user gives
+before each group the number of numbers in the group; thus
+the input corresponding to the one given earlier would be
+.EQ
+ 2, 2, 4, 1, 6, 0, 4, 5, 4, 7, 8, ...
+.EN
+and the output should be as before.  The program in Llucid
+is
+.PR
+ S asa k eq 1
+   where
+    k = y fby k-1;
+    y = x Fby y after k eq 1;
+    S = 0 fby S + next y;
+   end
+.PE
+As another example, suppose that @C is a stream of letters
+and blank characters and that we wish to produce a stream 
+of 'bundled' identifiers in @C&, ie a stream of lists of
+contiguous nonblank characters in @C&.  Thus if @C& is of the form
+.EQ
+ 'f', 'e', 'r', 'd', ' ', ' ', 'b', 'l', 'e', 'e', 'n', ' ', ...
+.EN
+then the output of the program should be of the form
+.EQ
+ ['f' 'e' 'r' 'd'], ['b' 'l' 'e' 'e' 'n'], ...
+.EN
+In Llucid this could be done as
+.PR
+ W asa D eq ' '
+  where
+   D = (C after next C ne ' ') Fby D after D eq ' ' and next D ne ' ';
+   W = [] fby  W :: [%C%];
+  end
+.PE
+These are examples in which the subcomputation/computation
+interface is such that !several values of the input stream
+(the input to the subcomputation) are involved in !one
+output.  These subcomputations correspond to loops in imperative
+languages which have @read statements inside and which read
+in several values during each iteration (naturally neither
+Lucid nor Llucid has read stats).  Sometimes, however, we
+may want a particular invocation of a subcomputation to
+produce more than one value of the output stream for each
+invocation.  This is again inconvenient in ordinary Lucid
+(requires @whenever and @upon&) but can be done easily in
+Llucid with an appropriate operation.  The required
+operation is called @until&; the value of  @@x until p& is
+obtained by stringing together initial segments of @x (ie
+initial segments for different successive values of $$t1&)
+consisting of those values up to but not including the time
+that @p is first true.  The function @until (@until is used as an
+infix operator) is defined by the equation
+.PH
+ x Until p = if First first p then (Next x Until Next p) else
+                 First first x fby (next x Until next p) fi
+.PE
+In terms of double streams, @until transforms
+
+ <<x0,x1,x2,..>
+  <y0,y1,y2,..>
+  <z0,z1,z2,..>
+  ...
+ >
+ 
+and
+
+ <<false,true,...>,
+   <false,false,false,true,...>,
+   <false,false,true,...>,
+  ...>
+
+into
+.EQ
+ <<x0,y0,y1,y2,z0,z1,...><x0,y0,y1,y2,z0,z1,...>,...>
+.EN
+Here, for example, is a program whose value is the stream
+of binary digits of the numbers in the input stream @n&, each
+group of digits being preceded by @"newline"&.
+.PR
+ ("newline" fby digit) until (false fby k eq 0)
+   where
+    k = current n fby k/2;
+    digit = k mod 2;
+   end
+.PE
+If the input stream $n is of the form
+.EQ
+ 4, 3, 5, 2, ...
+.EN
+then the output of the program will be of the form
+.EQ
+ "newline", 0, 0, 1, "newline", 1, 1, "newline", 1, 0, 1, "newline", 0, 1, ...
+.EN
+.NB [ $x provided $p ?]

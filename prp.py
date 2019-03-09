@@ -84,7 +84,10 @@ def Where(t):
     Term(exp.WhereSubject(t))
     Indent()
     NewLine()
-    printf("where")
+    if exp.WhereKind(t) == exp.WHEREWord:
+        printf("where")
+    else:
+        printf("whereloop")
     Indent()
     NewLine()
     Definitions(exp.WhereDefinitionsL(t))
@@ -102,9 +105,13 @@ def Definitions(dl):
         NewLine()
         
 def Definition(d):
-    Term(exp.Lhs(d))
-    printf(" = ")
-    Term(exp.Rhs(d))
+    lhs, es, rhs  = exp.DefinitionD(d)
+    Term(lhs)
+    if es == pop.EQUALWord:
+        printf(" = ")
+    else: 
+        printf(" is ")
+    Term(rhs)
 
 def Listexpression(t):
     printf("[% ")

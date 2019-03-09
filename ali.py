@@ -7,11 +7,11 @@ from exp import *
 def Formals(w):
     """ returns a table of lists of formals """
     formap = map.EmptyMap
-    subj,body = WhereD(w)
+    subj,wk,body = WhereD(w)
     while body != pop.Empty:
         d,body = pop.ConsD(body)
         if VarDefinitionP(d): continue
-        f,formals,rhs = FunDefinitionD(d)
+        f,formals,es,rhs = FunDefinitionD(d)
         formap = map.Extend(formap,f,formals)
     return formap
     
@@ -26,19 +26,19 @@ def ActualTable(e,atab,ftab):
         tab,ftab, yopds = ActualTableList(opds,atab,ftab)
         return tab,ftab, OperationC(o,yopds)
     if WhereP(e):
-        subj, body = WhereD(e)
+        subj, wk, body = WhereD(e)
         atab,ftab, ysubj = ActualTable(subj,atab,ftab)
         atab,ftab, ybody = ActualTableList(body,atab,ftab)
-        return atab,ftab, WhereC(ysubj,ybody)
+        return atab,ftab, WhereC(ysubj,wk,ybody)
     if VarDefinitionP(e):
-        v,rhs = VarDefinitionD(e)
+        v,es,rhs = VarDefinitionD(e)
         atab,ftab,yrhs = ActualTable(rhs,atab,ftab)
-        return atab,ftab, DefinitionC(VarC(v),yrhs)
+        return atab,ftab, DefinitionC(VarC(v),es,yrhs)
     if FunDefinitionP(e):
-        f,formals,rhs = FunDefinitionD(e)
+        f,formals,es,rhs = FunDefinitionD(e)
         atab, ftab, yrhs = ActualTable(rhs,atab,ftab)
         ftab = map.Extend(ftab,f,formals)
-        return atab,ftab, DefinitionC(VarC(f),yrhs)
+        return atab,ftab, DefinitionC(VarC(f),es,yrhs)
     if CallP(e):
         fun,actuals = CallD(e)
         funvar = Var(fun)
@@ -74,7 +74,7 @@ def ActualDefs(amap,formap):
             al = pop.ConsAll(al,pop.Tail)
             fm, fms = pop.ConsD(fms)
             actexpr = OperationC(ACTUALWord,acts)
-            df = DefinitionC(VarC(fm),actexpr)
+            df = DefinitionC(VarC(fm),EQUALWord,actexpr)
             deflist = pop.Cons(df,deflist)
     return deflist
             
