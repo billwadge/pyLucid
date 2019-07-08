@@ -1,10 +1,9 @@
-R
+sum
 where
- R = a asa abs a*a -N <0.00001
-  whereloop
-   N is current n;
-   a = 1 fby (a+N/a)/2;
-  end;
- n = 1 fby n+1;
- rows = 10;
+ i = 1 fby i+1;
+ term =  1 fby term/i;
+ sum = 0 fby sum+term;
+ columns = 1;
+ rows = 12;
+ numformat='%8.6f';
 end

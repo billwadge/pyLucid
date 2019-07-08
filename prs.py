@@ -68,7 +68,10 @@ def Complete(e,ig):
     while pio.CurrentItem(ig) != '' and exp.InfixP(pio.CurrentItem(ig)) and YieldsP(q,pio.CurrentItem(ig)):
         f = Complete(f,ig)
     if e == '': return exp.Operation1C(q,f)
-    if q == WVRWord or q==WHILEWord or q==SWVRWord: return exp.CallC(exp.VarC(q),exp.List2(e,f))
+    #if q == WVRWord or q==WHILEWord or q==SWVRWord: return exp.CallC(exp.VarC(q),exp.List2(e,f))
+    if q in definables:
+        defined.add(q)
+        return exp.CallC(exp.VarC(q),exp.List2(e,f))
     return exp.Operation2C(q,e,f)
     
 def Factor(g):
@@ -100,7 +103,9 @@ def Factor(g):
 def Call(f,ig):
     Expect(LparenWord,ig)
     l = Arglist(ig) 
-    if Expect(RparenWord,ig): return exp.CallC(f,l)
+    if Expect(RparenWord,ig): 
+        if exp.Var(f) in funstants: return exp.OperationC(exp.Var(f),l)
+        return exp.CallC(f,l)
     return InTerm(exp.CallC(f,l))
     
 def Listexpression(ig):
@@ -171,10 +176,14 @@ LparenWord = pop.WordC("(")
 RparenWord = pop.WordC(')')
 CommaWord = pop.WordC(',')
 WVRWord = pop.WordC("wvr")
+UPNWord = pop.WordC("upn")
 SWVRWord = pop.WordC("swvr")
 WHILEWord = pop.WordC("while")
 INTERMWord = pop.WordC("interm")
 reservedwords = Reserve(pio.Popliteral("[if then else fi where whereloop end valof]"))
+definables = {WVRWord,SWVRWord,WHILEWord,UPNWord}   #binary ops that have definitions as udfs
+funstants = {pop.FBY2Word,pop.ATTIME2Word,pop.APPLYWord} #operation constants called like functions eg fby2(a,b1,b2)
+defined = set() #definables that were actually encountered
 
 def ParseFile(fname):
     f = open(fname,"r")
@@ -189,9 +198,11 @@ if __name__ == "__main__":
     while True:
         ln = input()
         if ln==';': break
-        prog = prog + ' ' + ln
+        prog = prog + '\n' + ln
     cg = gen.CharStringC(prog)
     ig = pio.ItemGenChargenC(cg)
+    pio.parsing = True
     ex = Expr(ig)
     pio.WriteItemln(ex)
     prp.Termln(ex)
+    #print("Need defs of ",defined)

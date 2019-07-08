@@ -1,6 +1,6 @@
-import pio
+import pio,math
 from pop import *
-
+from math import sin, cos, tan, exp
 def SubexpressionL(e):
     """ list of proper immediate subexpressions of e """
     if LiteralP(e): return Empty
@@ -332,9 +332,9 @@ reservedwords = Reserve(pio.Popliteral("[if then else fi where whereloop end val
 
 NewFixes(pio.Popliteral("[[100 sin 65][100 cos 65][100 tan 65][100 exp 65][100 abs 44][100 log 65][100 log2 65][100 sqrt 65][100 pi 100][100 phi 100]]"))
 NewFixes(pio.Popliteral("[[100 tl 65][100 not 65][100 isatom 65][100 islist 65][100 isnumber 65][100 isnil 65][100 iseod 65][100 isstring 65][100 isword 65][100 iserror 65]]"));
-NewFixes(pio.Popliteral("[[100 first 65][100 First 65][100 init 65][100 id 65][100 current 65][100 succ 65][100 next 65][100 Next 65][100 pre 65][100 contemp 65][100 active 65][10 fby 9][100 Fby 65][10 sby 9][9 ybf 10][10 wvr 11][10 while 11][10 swvr 11][10 asa 11][10 attime 11][10 atspace 11]]"))
+NewFixes(pio.Popliteral("[[100 first 65][100 First 65][100 init 65][100 id 65][100 current 65][100 succ 65][100 # 65][100 $ 65][100 next 65][100 Next 65][100 pre 65][100 contemp 65][100 active 65][10 fby 9][100 Fby 65][10 sby 9][10 & 9][9 ybf 10][10 wvr 11][10 while 11][10 swvr 11][10 asa 11][10 attime 11][10 atspace 11]]"))
 
-NewFixes(pio.Popliteral("[[20 :: 19][25 or 24][30 and 29][40 <> 39][40 < 39][40 <= 39][40 eq 39][40 ne 39][40 >= 39][40 > 39][45 - 44][45 + 44][50 * 49][50 / 49][50 div 49][50 mod 49][55 ** 54][55 ^ 54][100 hd 65][100 index 100][100 sindex 100][100 eod 100][100 eos 100][100 true 100][100 false 100]]"));
+NewFixes(pio.Popliteral("[[20 :: 19][25 or 24][30 and 29][40 <> 39][40 < 39][40 <= 39][40 eq 39][40 ne 39][40 >= 39][40 > 39][45 - 44][45 + 44][50 * 49][50 / 49][50 div 49][50 mod 49][55 ** 54][55 ^ 54][100 hd 65][100 input 100][100 index 100][100 sindex 100][100 eod 100][100 eos 100][100 true 100][100 false 100]]"));
 
 opsymbols = prefixes.union(infixes).union(prefixes).union(postfixes).union(nullfixes)
 opsymbols.add(YCALLWord)
@@ -344,6 +344,9 @@ opsymbols.add(ACTUALWord)
 opsymbols.add(GLOBALWord)
 opsymbols.add(EODWord)
 opsymbols.add(EOSWord)
+opsymbols.add(ATTIME2Word)
+opsymbols.add(FBY2Word)
+opsymbols.add(APPLYWord)
 
 
 

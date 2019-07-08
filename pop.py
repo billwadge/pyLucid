@@ -6,6 +6,10 @@
 #strings are ('s',s) s a python string
 #sets are ('e',els) els like a list
 #empty set is ('e',[])
+# hmm ordered sets so elements(s) is well defined
+# really just no-dups lists
+# set operations preserve nodupness
+# enable vbos setof E(i) forall I in R:P(I) end
 #
 
 import pio
@@ -45,7 +49,7 @@ def Filter(l,p):
     
 
 def NumC(n):
-    assert type(n)==int or type(n)==float,'numc given non number'
+    assert type(n)==int or type(n)==float,'numc given non number '+str(n)
     return ('n',n)
 
 def StringC(s): #create a popstring corresponding to  python string s
@@ -64,7 +68,9 @@ def BoolC(b):
     
 Empty = ('l',[])
 def BoolVal(i):
-    return i == TRUEWord
+    if i == TRUEWord: return True
+    if i == FALSEWord: return False
+    assert False, 'BoolVal given non bool '+str(i)
     
 
 def EodP(i):
@@ -128,14 +134,14 @@ def Occurs(x,l):
     return False
     
     
-def HeadA(pl,h1):
+def HeadA(pl,h1): #deprecated
     """ change the head of list pl to be h1 """
     k,l = pl
     assert k=='l', 'HeadA given nonlist'
     assert l != [], 'HeadA given empty list '
     l[0] = h1
     
-def TailA(pl,t1):
+def TailA(pl,t1):#deprecated
     """ change the tail of list pl to be t1 """
     k,l = pl
     assert k=='l', 'TailA given nonlist'
@@ -536,6 +542,9 @@ LLISTPARENWord = WordC("[%")
 RLISTPARENWord = WordC("%]")
 LSETPARENWord = WordC("{%")
 RSETPARENWord = WordC("%}")
+ATTIME2Word = WordC("Attime2")
+FBY2Word = WordC("fby2")
+APPLYWord = WordC("apply")
 OUTPUTWord = WordC("output")
 IDWord = WordC("id")
 EODWord = WordC("eod")

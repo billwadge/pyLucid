@@ -34,7 +34,8 @@ def Prefix(t):
 
 def Infix(t):
     """print a term with an infix operator"""
-    s = exp.OperationSymbol(t) 
+    s = exp.OperationSymbol(t)
+    #print('Infix called with ',s) #debug 
     a1 = exp.OperationOperand1(t);a2 = exp.OperationOperand2(t)
     if(exp.Lprecedence(s) > TermRprecedence(a1)):
         bprp(a1)

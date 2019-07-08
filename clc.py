@@ -132,8 +132,11 @@ def Pisstring(a):
 def Pislist(a):
     return BoolC(ListP(a[0]))
     
-def Piseod(a):
-    return BoolC(a[0] == EODWord)
+def Peod(a):
+    return EODWord
+    
+def Peos(a):
+    return EOSWord
     
 def Calculate(o,resarray):
     """ calculate the result of applying strict operator o to results in array a """
@@ -178,12 +181,11 @@ strict["true"] = Ptrue
 strict["false"] = Pfalse
 strict["pi"] = Ppi
 strict["phi"] = Pphi
-strict["eod"] = Peod
-strict["eos"] = Peos
 strict["not"] = Pnot
 strict["isword"] = Pisword
 strict["isnum"] = Pisnum
 strict["isstring"] = Pisstring
 strict["islist"] = Pislist
-strict["iseod"] = Piseod
+strict["eod"] = Peod
+strict["eos"] = Peos
     
