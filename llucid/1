@@ -1,0 +1,129 @@
+.SP 2
+.SH
+1. THE HIGHER-ORDER TIME PARAMETERS
+.PP
+The basic principle of the Lucid approach to time and change
+might be termed the 'algebraic' one.  A variable is
+treated mathematically as denoting an infinite history of
+all its various values.  Lucid does not have an
+iterative construct; instead, it has 'time bending'
+operations like @next and @fby which transform histories.  In
+the treatment of nesting, however, we seem to have violated
+that principle. As a result we are unable to apply the
+algebraic approach to the problem of specifying the
+computation/subcomputation interface.
+.PP
+In the following simple program involving nesting,
+.PR
+   f asa k eq 1
+     where
+      N is current n;
+       k = N fby k-1;
+       f = 1 fby k*f;
+     end
+.PE
+consider the identifier @f&. The programmer certainly thinks
+of @f& as varying with time; but @f& has no value at all
+assigned to it on the 'outside' of the clause.  The meaning
+of the clause is specified in terms of a whole family of
+temporary internal environments, each of which assigns its
+own history to @f&.  Lucid as it stands assigns no single
+object to @f& which summarises its total activity in the same
+way that the history <1,2,3,...> summarises the total
+activity of @i when @@i = 1 fby i+1&.;
+.PP
+The reason that Lucid does not assign a single history to @f&
+is that its activity is too complicated to be described by a
+single infinite sequence of values.  In operational terms, @f&
+takes on a whole infinite sequence of values for every step
+in the main computation; thus a complete summary of the
+activity of @f& requires a !sequence!of !sequences of values;
+in other words, a two dimensional sequence.
+.PP
+Suppose for example, that the input @n to the above program
+takes on the values 3, 5, 7, ... .  Then in the first
+invocation of the where body @f runs through the values
+.EQ
+  1, 3, 6, 6, 0, 0, ...;
+.EN
+on the second invocation it runs through the values
+.EQ
+  1, 5, 20, 120, 120, ...;
+.EN
+and on the third, through the values
+.EQ
+ 1, 7, 42, 210, 840, ...
+.EN
+(these are 'virtual' values; on each step only finitely many
+of them need actually be computed).  The entire activity can
+therefore be summarised by the doubly infinite sequence
+.EQ
+ <<1,3,6,6,0,...>,<1,5,20,120,120,...>,<1,7,42,210,840,...>,...>.
+.EN
+Each particular value taken on by @f can be thought of as
+determined by !two independent time parameters. 
+The first is the 'inner'
+or 'local' time $$t0&; this is the number of steps completed in the
+current subcomputation. 
+The second is the 'outer' or 'global' time $$t1&.
+This is the number of steps completed in the main
+computation.  The history of @f can therefore also be thought
+of as a function $f of two integer arguments with 
+$$f(t0,t1)&
+(we will use the notation $$f sub t0,t1&) 
+being the value taken on
+by @f at inner time $$t0& and outer time $$t1&.  
+Thus $$f sub 4,2& is 840,
+and the double sequence given above is
+.EQ
+ <<f0,0,f1,0,f2,0,...>,
+  <f0,1,f1,1,f2,1,...>,
+  <f0,2,f1,2,f2,2,...>...>
+.EN
+This approach can be easily be extended to give generalised 'histories' 
+for variables defined in arbitrarily deeply
+nested clauses.  For example, the total activity of a
+variable like @b& in
+.PR
+   h+k asa p
+    where
+     N is current n
+     h = ...;
+     p = ...;
+     k = ...
+     where
+      K is current k
+      q = ...;
+      r = ...
+       where
+        R is current r-q
+        b = ...;
+        c = ...;
+       end
+     end
+    end
+.PE
+is really a sequence of sequences of sequences of sequences.
+Alternatively, we can think of each individual value take on
+by @b& as being specified by !four time parameters 
+$$t0&, $$t1&, $$t2&
+and $$t3&.  
+As before, $$t0& is the innermost, local time (in a
+sense it varies most 'rapidly').  The parameter $$t1&
+represents time in the immediately enclosing clause (where @r
+is defined), $$t2& represents time in the next enclosing clause
+(where @k is defined), and $$t sub 3& represents outermost time, the
+steps in the 'main' computation.  Thus the total activity of
+@b can be expressed as a function $b with domain
+$$N \(mu  N \(mu  N \(mu N&.
+.PP
+Since Lucid allows unlimited nesting of computations, a
+completely general approach must involve sequences of
+arbitrarily large dimension.  One way to proceed is to
+define the value of a variable to be a nested sequence of
+the appropriate dimension. Complications arise, however,
+when histories of different dimensions are combined.  For
+example, when adding two generalised history it is
+necessary to 'coerce' the history of smaller dimension into
+one of larger dimension.  In particular, each constant has
+infinitely many representatives, one for each dimension.

@@ -1,10 +1,9 @@
-tot(t)
+sum
 where
- int(x) = tot((x + next x)*dx/2);
- dx = 0.05;
- t = dx*index;
- tot(k) = s where s = s -k ybf 0 fby s+k; end;
- columns = 3;
- rows = 30;
- numformat = '%7.4f';
+ i = 1 fby i+1;
+ term =  1 fby term/i;
+ sum = 0 fby sum+term;
+ columns = 1;
+ rows = 12;
+ numformat='%8.6f';
 end

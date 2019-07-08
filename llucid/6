@@ -1,0 +1,63 @@
+.SP 11
+.SH
+6. NONRECURSIVE EQUALITY
+.PP
+At first sight Llucid appears not to be an extension of
+Lucid itself (as opposed to Luswim) because freezing is treated
+differently syntactically (Llucid has no built in @@is current& construct).  
+In Llucid the factorial example could be written
+.PR
+   f asa k eq 1
+     where
+      k = current n fby k-1;
+      f = 1 fby k*f;;
+     end;
+.PE
+but the original Lucid version (given at the beginning of
+the chapter) is not syntactically a Llucid program.
+.PP
+The discrepancy cam be easily resolved once we realise that
+the Lucid @is& is really (or can be thought of as) just the original Iswim's
+!nonrecursive equality.  Recall that in original Iswim definition's
+were by default nonrecursive.  In a nonrecursive @where clause,
+right hand side expressions referred
+to !outer values of variables. If (in original Iswim) recursion was desired
+(so that right hand sides had inner values),
+this had to be made explicit by using @whererec or @letrec&. 
+Our new Iswim makes recursion the default, so that if nonrecursion is
+desired it would have to be explicitly indicated.  
+Using @is& is the explicit indication.
+.PP
+The @is& can therefore be used in Luswim or Iswim, eg
+.PR
+ x+y
+  where
+   x = 2;
+   y = z*t
+    where
+     z is x+1
+     t = x+1;
+     x = 3;
+    end
+  end
+.PE
+The value of this Iswim clause is therefore 14; in the
+innermost clause @z is defined equal to the !outer value of @x
+(namely 2) but @t is defined to be the !inner value of @x
+(namely 3).  It is even legal to have a nonrecursive
+definition of the form  @h is @h+1&; it means simply that
+!inside the clause the value of @h is the value it has
+!outside plus one.
+.PP
+In the language Lucid, though, @is& cannot be interpreted in
+this way because @current& has no semantics; instead, we had
+to give a semantics to @@is current& declarations.  In
+Llucid, however, @is& can once again be given the
+nonrecursive (or better, nonselfreferential) interpretation
+and it is not hard to see that the meaning of a Lucid
+program interpreted as such is the same as its
+meaning as a Llucid (with @is&) program. (Again, the meaning of the
+Lucid program has to first be converted into a hyperstream).  
+(In Llucid the globals appearing to the right of @is& also have @active
+implicitly applied).  In a sense LLucid makes Lucid
+respectable again, though it is still not simply Iswim.

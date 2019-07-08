@@ -1,10 +1,8 @@
-import pop,pio,exp,prp,gen,prs,map
-
-literalmap = map.EmptyMap
+import pop,pio,exp,prp,gen,prs
 
 def Awhere(wc):
     """ atomize subject and rhs of where clause adding generated defs to body """
-    subject, body = exp.WhereD(wc)
+    subject, wk,body = exp.WhereD(wc)
     atomicsubject, atomicdefs = Aexpr(subject)
     assert pop.ListP(atomicdefs), 'oops'
     while body != pop.Empty:
@@ -13,7 +11,7 @@ def Awhere(wc):
         assert pop.ListP(eqns), 'arg'
         atomicdefs = pop.Append(atomicdefs,eqns)
         atomicdefs = pop.Cons(newdef,atomicdefs)
-    return exp.WhereC(atomicsubject,atomicdefs),pop.Empty
+    return exp.WhereC(atomicsubject,wk,atomicdefs),pop.Empty
     
 def Adefinition(df):
     """atomize a definition, returning atomic def and deflist"""
@@ -22,23 +20,18 @@ def Adefinition(df):
     if exp.LiteralP(rhs): #equated to a literal, no action
         return df,pop.Empty
     arhs, defs = Aexpr(rhs)
-    return exp.DefinitionC(lhs,arhs), defs
+    return exp.DefinitionC(lhs,pop.EQUALWord, arhs), defs
     
 def Aexpr(e):
     """ returns e1 dl where dl is the list of atomic definitions generated
         and e1 is the new atomic expression """
-    global literalmap
     if exp.OperationP(e): return Aoperation(e)
     if exp.VarP(e): return e, pop.Empty
     if exp.WhereP(e): return Awhere(e)
     assert not exp.CallP(e), ' cannot do function calls '
     assert exp.LiteralP(e), ' bad arg to Aexpr'
-    val = exp.LiteralValue(e)
-    ok, v = map.Apply(literalmap,val) #do we already have a variable equated to this  literal?
-    if ok: return v, pop.Empty #yes
-    v = VarGen()               #no, create new variable
-    d = exp.DefinitionC(v,e)     #create definition
-    literalmap = map.Extend(literalmap,val,v) #record the fact
+    v = VarGen()
+    d = exp.DefinitionC(v,pop.EQUALWord,e)
     return v, pop.List1(d)
     
 def Aoperation(e):
@@ -58,7 +51,7 @@ def Aoperation(e):
         if not exp.VarP(ae):
             nv = VarGen()               # generate a new variable
             vl = pop.Cons(nv,vl)           # save it  
-            d = exp.DefinitionC(nv,ae)      # generate new atomic definition
+            d = exp.DefinitionC(nv,pop.EQUALWord,ae)      # generate new atomic definition
             aeqs = pop.Cons(d,aeqs) 
         else:
             vl = pop.Cons(ae,vl)
@@ -87,9 +80,8 @@ if __name__ == "__main__":
     pio.WriteItemln(e)
     prp.Term(e);print()
     e1,dl = Aexpr(e)
-    prp.Termln(e1);print(' where')
+    prp.Term(e1);print(' where')
     while dl != pop.Empty:
         prp.Definition(pop.Head(dl));print()
         dl = pop.Tail(dl)
-    print('end')
     

@@ -1,0 +1,101 @@
+.SP 5
+.SH
+3. NESTING WITH HYPERFILTERS
+.PP
+Let us begin by trying to devise a purely algebraic approach to simple
+nesting (which at present is 'wired into' the definition of the where clause).
+Consider the 'iterative factorial' example
+given earlier, and let $n be the hyperstream value
+of @n.  We want to define @k to vary faster than @n. 
+In ordinary Lucid, this is done 
+with the @@is Current& declaration. Inside the clause, the
+value of @n at time $$t0,t1,t2 ...&
+is that of @n at time $$t1,t2,t3 ... &
+and so the value of @k at time $$t0,t1,t2 ...&
+in the clause is $$n sub t0,t1,t2...~-~t0&.
+If the value of @n at time $t& !outside the clause is
+$$2*t0+1&, that of @k at time $$t0,t1,t2...& 
+!inside the clause is therefore
+$$2*t1+1 - t0&.  In order to define @k in this way without 
+@@is Current&, we obviously need at least one operation which 'shifts'
+the time parameters. In fact, we really need two, one to 'freeze' 
+globals for use inside the clause, and another to
+unfreeze the results for export. In the same program, for example, the value
+of the subject of the clause at time $t& inside the clause is 
+$$n sub t1,t2,t3 ...&
+factorial; independent of $$t0&, but not the same hyperstream
+as the one whose value at time $$t0,t1,t2...& 
+is the factorial of $$n sub t0,t1,t2 ...&.
+.PP
+The simplest pair of functions which give this effect are the
+functions @Latest and its 'inverse' (which we now call @Contemp&)
+which were introduced in the original Lucid paper.  For any hyperstream $n,
+.EQ
+  Latest(n) sub t0,t1,t2... ~=~ 
+  n sub t1,t2,t3 ...
+.EN
+and
+.EQ
+  Contemp(n) sub t0,t1,t2... ~=~ 
+   n sub t0,t0,t1,t2 ...
+.EN
+The value of @Contemp(x) is the value which @x has inside a loop
+when the inner time ($$t0&) 'catches up' with the outer time ($$t1&);
+it is the !Contemporary value of @x&.
+.PP
+It is now easy to check that @k inside the clause has the
+value defined by the equation
+.PH
+ k = Latest(n) fby k-1;
+.PE
+and that the whole clause is equivalent to the clause
+.PR
+ Contemp(f asa k eq 1)
+   where
+     n is Latest(n);
+     k = n fby k-1;
+     f = 1 fby k*f;
+   end
+.PE
+in $Iswim(Llu(A))
+.PP
+This approach definitely gives nesting effect without the
+tampering with @where clause; and it can be extended easily
+to handle other forms of computation/subcomputation interface.
+For example, we can define @restof by
+.EQ
+ Restof(x) sub t0,t1,t2... ~=~ 
+  x sub t1+t0,t2,t3 ...
+.EN
+then
+.PR
+ Contemp(M asa restof(x) eq 0)
+   where
+    M = 0 fby M+1;
+   end
+.PE
+is a program which tells how long it will be before @x is
+next 0; if @x is the sequence (we assume the value of @x
+depends only on $$t0&)
+.EQ
+ <3, 5, 0, 5, 0, 0, 8, 4, 7, 0, ... >
+.EN
+then the value of the clause (also depending only on $$t0&) is
+the sequence
+.EQ
+ <2, 1, 0, 1, 0, 0, 3, 2, 1, 0, ... >
+.EN
+.PP
+This approach cannot, however, be recommended. The problem with it is
+that @Latest and its dual are very dangerous. 
+The two operations shift the time dimensions and
+unrestricted use (as in the expression @x+Latest(x)&) allows bizarre
+programs which cannot be understood in terms of pipeline dataflow
+(if they can be understood at all).
+Of course one can devise a methodology for using @Latest
+and its partner which avoids dimensional mismatches; 
+but using this methodology is roughly equivalent
+to writing in ordinary Lucid and using @@is Current&.
+Nothing is really gained by manipulating hyperstreams directly.
+Standard Lucid enforces the discipline, and spares the programmer
+the necessity of writing @Contemp&.

@@ -1,0 +1,68 @@
+.SP 4
+.SH
+2. HYPERSTREAMS
+.PP
+In order to avoid these complications we define a !!generalised history& 
+to be instead a function of the entire
+infinite sequence 
+$$t0&, $$t1&, $$t2&, ...  of time parameters.  In
+other words,  a generalised history (or !hyperstream&) is
+a function whose domain is the set $$N sup N& of all
+infinite sequences of natural numbers.  These objects are in
+a sense streams whose dimension is formally infinite.  In
+actual programs, though, the values of any particular
+variable will depend on only finitely many of the time
+parameters.  It is extremely important to understand that
+time is parametrised from the inside out; $$t0& is the time in
+the current local computation, $$t1& that in the enclosing
+computation, $$t2& that in the next enclosing computation and
+so on.
+.PP
+It is not hard to see how to define the data operations and
+normal Lucid operations on hyperstreams; they are simply
+extended pointwise to the 
+$$t1&, $$t2&, $$t3& ... parameters.  For
+example, if @a and @b& have hyperstreams $a and $b respectively
+as their values, then the value of @a+b is the hyperstream
+$a+b where
+.EQ
+(a+b) sub t0,t1,t2 ... ~=~ 
+  a sub t0,t1,t2 ...~+~
+      b sub t0,t1,t2 ... 
+.EN
+The value of @next(a) is the stream $next(a) where
+.EQ
+ next(a) sub t0,t1,t2 ... ~=~ 
+    a sub (t0+1),t1,t2 ... .
+.EN
+because @next(a) is the value @a has on the next step of the
+!local computation.  From the global point of view, this is
+the value which @a has on the !immediately succeeding step of
+the computation.  It is the value obtained when only the
+innermost computation is advanced one step, ie when all the
+enclosing computations remain suspended.  In the same way the
+hyperstream operations @first and @fby are defined by
+.EQ I
+ first( a) sub  t0,t1,t2... ~=~ 
+  a sub 0 t1,t2 ...
+.EN
+.EQ I
+ fby(a,b) sub t0,t1,t2... ~=~ mark
+    a sub 0 t1,t2 ... ~~(t0~=~0);
+.EN
+.EQ I
+~=~ lineup b sub (t0-1),t1,t2 ...  ~~(t0>1)
+.EN
+.PP
+In this way we can define a hyperdimensional operator $Llu which is the
+analog of the ordinary operator $Lu&. Given any algebra $A,
+$Llu(A) is the algebra of hyperstreams of elements of the universe of $A,
+with @first&, @next&, @fby and so on defined as above.
+.PP
+The operator $Llu is not, however, very useful - at least as we have just
+defined it.
+The whole point of considering hyperstreams, of course,
+is to permit an algebraic approach to nesting and other forms of interface.
+Hyperstreams make it possible to 'calculate' with interface histories;
+but we obviously need new operation(s) which give the effect of
+freezing, taking the remainder, or whatever else we may want.

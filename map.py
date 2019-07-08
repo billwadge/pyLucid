@@ -2,12 +2,21 @@
 from pio import *
 from pop import *
 
+def MapC(s,f):
+    """ create a map by running over set s applying function f """
+    fs = EmptyMap
+    while s != EmptyMap:
+        x,s =AddD(s)
+        fs = Extend(fs,x,f(x))
+    return fs
+    
+    
 def Apply(m,x):
     """ apply m to x returning True, m(x) if x in domain of m"""
     """otherwise, False, None"""
     while not EmptySetP(m):
-        p,m = DeMember(m)
-        a,b = DeList2(p)
+        p,m = AddD(m)
+        a,b = List2D(p)
         if EqualP(a,x): return True,b
        # WriteItem(a);print(' ');WriteItemln(x)
     return False, None
@@ -16,21 +25,20 @@ def SafeApply(m,x):
     """ apply knowing x is in the domain of m """
     while not EmptySet(m):
         p,m = DeMember(m)
-        a,b = DeList2(p)
+        a,b = List2D(p)
         if EqualP(a,x): return b
     assert False, 'safeapply not safely applied'
     
 def Extend(m,x,y):
     """extend m by adding m(x)=y"""
-    res = SafeAdd(List2(x,y),m)
-    return res
+    return SafeAdd(List2(x,y),m)
     
 def MapS(m,a,b):
     """modify or extend m so m(a)=b"""
     n = EmptySet
     while not EmptySetP(m):
         p,m = DeMember(m)
-        x,y = DeList2(p)
+        x,y = List2D(p)
         if EqualP(x,a):  #found a
             m = Add(List2(a,b),m)
             return Union(m,n)
@@ -43,7 +51,7 @@ def Range(m):
     r = EmptySet
     while not EmptySetP(m):
         p,m = DeMember(m)
-        a,b = DeList2(p)
+        a,b = List2D(p)
         r = Add(b,r)
     return r
     
@@ -52,12 +60,12 @@ def Domain(m):
     d = EmptySet
     while not EmptySetP(m):
         p,m = DeMember(m)
-        a,b = DeList2(p)
+        a,b = List2D(p)
         d = SafeAdd(a,d)
     return d
     
 def Star(m,s):
-    """ {f(x): x in s} """
+    """ {m(x): x in s} """
     r = EmptySet
     while not EmptySetP(s):
         x,s = DeMember(s)
@@ -71,11 +79,11 @@ def Compose(m1,m2):
     n1 = m1
     while not EmptySetP(n1):
         e1,n1 = DeMember(n1)
-        x1,y1 = DeList2(e1)
+        x1,y1 = List2D(e1)
         n2 = m2
         while not EmptySetP(n2):
             e2,n2 = DeMember(n2)
-            x2,y2 = DeList2(e2)
+            x2,y2 = List2D(e2)
             if EqualP(y1,x2):
                 cm = Extend(cm,x1,y2)
     return cm
@@ -90,7 +98,7 @@ def Restrict(m,s):
     f = EmptySet
     while not EmptySetP(m):
         p,m = DeMember(m)
-        x,y = DeList2(p)
+        x,y = List2D(p)
         if Member(x,s):
             f = SafeAdd(p,f)
         else:

@@ -8,14 +8,22 @@ signchars = '+-*/=<>#:$|&^'
 whitechars = ' \n\t'
 punctuations = '"(),.;'
 numformat=''
+parsing = True
 
 def skipwhites(g):
     """skip white chars in char generator g"""
+    global parsing
     while CurrentChar(g)!='': #not end of input
+        char = CurrentChar(g)
+        if char == '/' and LookChar(g) == '/' and parsing: #skip a comment
+            skipcomment(g)
         if CurrentChar(g) not in whitechars:break #found something
         NextChar(g) #skip a white char
         
-        
+def skipcomment(g):
+    NextChar(g); NextChar(g)
+    while CurrentChar(g) != "\n" and CurrentChar(g) != '': #skip to end of line
+        NextChar(g)
 
 def ItemRead(g): 
     """read the next item from character generator g returning it and leaving g starting at the first unused char"""
@@ -36,6 +44,7 @@ def ItemRead(g):
     if ch=='%' and LookChar(g) == '}':
         NextChar(g);NextChar(g)
         return pop.WordC('%}')
+        
     if ch in '~'+digits: return NumRead(g)           #should be a number
     if ch in letters: return IdentRead(g)            #should be an identifier word
     if ch in signchars: return SignRead(g)           #should be a sign word

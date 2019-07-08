@@ -1,7 +1,11 @@
-sin x
+sum
 where
  term = 1 fby x*term/n;
  n = 1 fby n+1;
  sum = 0 fby sum+term;
- x = 0.693147;
+ //x = 0.693147;
+ x = 1;
+ columns=1;
+ rows=10;
+ numformat='%8.6f';
 end

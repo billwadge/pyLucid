@@ -12,25 +12,27 @@ def Expr(ig):
     if ci=='': return f #nothing more to parse
     while pio.CurrentItem(ig)!='' and exp.InfixP(pio.CurrentItem(ig)):
         f=Complete(f,ig)
-    if pio.CurrentItem(ig) != exp.WHEREWord: return f
-    e1 = Where(f,ig)
-    o = pio.CurrentItem(ig)
-    if o == '': return e1
-    if exp.InfixP(o): 
-       pio.NextItem(ig)
-       e2 = Expr(ig)
-       if o == WVRWord or o==WHILEWord or o==SWVRWord: return exp.CallC(exp.VarC(o),pop.List2(e1,e2))
-       return exp.Operation2C(o,e1,e2)
-    while pio.CurrentItem(ig) == exp.WHEREWord:
-       e1 = Where(e1,ig)
+    w = pio.CurrentItem(ig)
+    if w!= exp.WHEREWord and w != exp.WHERELOOPWord: return f
+    if w == exp.WHEREWord:
+        e1 = Where(f,ig)
+    else:
+        e1 = Whereloop(f,ig)
     return e1
+    
+def Whereloop(e,ig):
+    """ parse a whereloop clause with parsed subject """
+    Expect(exp.WHERELOOPWord,ig)
+    dl = Definitions(ig)
+    Expect(exp.ENDWord,ig)
+    return exp.WhereC(e,exp.WHERELOOPWord,dl)
     
 def Where(e,ig):
     """ parse a where clause with parsed subject """
-    Expect(pop.WHEREWord,ig)
+    Expect(exp.WHEREWord,ig)
     dl = Definitions(ig)
-    Expect(pop.ENDWord,ig)
-    return exp.WhereC(e,dl)
+    Expect(exp.ENDWord,ig)
+    return exp.WhereC(e,exp.WHEREWord,dl)
     
 def Definitions(ig):
     """pick up a list of definitions"""
@@ -43,11 +45,14 @@ def Definition(ig):
     """ pick up a definition """
     lhs = Expr(ig)
     if lhs == '': return ''
-    if not Expect(pop.EQUALWord,ig):
-        prp.printf('expected = found ');pio.WriteItemln(pio.CurrentItem(ig));exit()
+    lex = pio.NextItem(ig)
+    if lex != exp.EQUALWord and lex != exp.ISWord:
+        pro.printf('Expected = or is')
+        print('Found '); pio.Dump5(ig)
+        print()
+        exit()
     rhs = Expr(ig)
-    if rhs == '': rhs = exp.Unterm
-    df = exp.DefinitionC(lhs,rhs)
+    df = exp.DefinitionC(lhs,lex,rhs)
     if not Expect(exp.SEMICOLONWord,ig):
         return Interm(df)
     return df
@@ -63,7 +68,10 @@ def Complete(e,ig):
     while pio.CurrentItem(ig) != '' and exp.InfixP(pio.CurrentItem(ig)) and YieldsP(q,pio.CurrentItem(ig)):
         f = Complete(f,ig)
     if e == '': return exp.Operation1C(q,f)
-    if q == WVRWord or q==WHILEWord or q==SWVRWord: return exp.CallC(exp.VarC(q),exp.List2(e,f))
+    #if q == WVRWord or q==WHILEWord or q==SWVRWord: return exp.CallC(exp.VarC(q),exp.List2(e,f))
+    if q in definables:
+        defined.add(q)
+        return exp.CallC(exp.VarC(q),exp.List2(e,f))
     return exp.Operation2C(q,e,f)
     
 def Factor(g):
@@ -91,17 +99,13 @@ def Factor(g):
     pio.Dump5(g);print()
     exit()
     
-def Valof(ig):
-    """ parse a valof block"""
-    Expect(pop.VALOFWord,ig)
-    dl = Definitions(ig)
-    Expect(pop.ENDWord,ig)
-    return exp.ValofC(dl)
     
 def Call(f,ig):
     Expect(LparenWord,ig)
     l = Arglist(ig) 
-    if Expect(RparenWord,ig): return exp.CallC(f,l)
+    if Expect(RparenWord,ig): 
+        if exp.Var(f) in funstants: return exp.OperationC(exp.Var(f),l)
+        return exp.CallC(f,l)
     return InTerm(exp.CallC(f,l))
     
 def Listexpression(ig):
@@ -172,10 +176,14 @@ LparenWord = pop.WordC("(")
 RparenWord = pop.WordC(')')
 CommaWord = pop.WordC(',')
 WVRWord = pop.WordC("wvr")
+UPNWord = pop.WordC("upn")
 SWVRWord = pop.WordC("swvr")
 WHILEWord = pop.WordC("while")
 INTERMWord = pop.WordC("interm")
-reservedwords = Reserve(pio.Popliteral("[if then else fi where end valof]"))
+reservedwords = Reserve(pio.Popliteral("[if then else fi where whereloop end valof]"))
+definables = {WVRWord,SWVRWord,WHILEWord,UPNWord}   #binary ops that have definitions as udfs
+funstants = {pop.FBY2Word,pop.ATTIME2Word,pop.APPLYWord} #operation constants called like functions eg fby2(a,b1,b2)
+defined = set() #definables that were actually encountered
 
 def ParseFile(fname):
     f = open(fname,"r")
@@ -190,9 +198,11 @@ if __name__ == "__main__":
     while True:
         ln = input()
         if ln==';': break
-        prog = prog + ' ' + ln
+        prog = prog + '\n' + ln
     cg = gen.CharStringC(prog)
     ig = pio.ItemGenChargenC(cg)
+    pio.parsing = True
     ex = Expr(ig)
     pio.WriteItemln(ex)
     prp.Termln(ex)
+    #print("Need defs of ",defined)

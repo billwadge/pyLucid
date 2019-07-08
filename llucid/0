@@ -1,0 +1,48 @@
+.SP 1
+.SH
+CHAPTER X:  LLUCID, LUCID WITH MULTIDIMENSIONAL TIME
+.PP
+We have already seen that simple primitives of 'ordinary' Lucid 
+allow for an amazing variety of different kinds of
+computation.
+However, ordinary Lucid still provides only two forms of
+interaction between a computation and a subcomputation.
+Programmers often (and quite rightly) find Lucid somewhat
+restrictive in this sense. People used to conventional
+imperative languages perceive it as inability to "do I/O in
+a subcomputation".  Suppose, for example, that we wanted to
+perform a lexical analysis of a stream of input characters.
+We want to bundle up groups of characters into lexical units
+("lexons") and output the stream of lexons.  A PASCAL
+programmer would write a main loop which produces a lexon
+each 'time round', with a subloop that on each invocation
+runs through as many characters as are needed for the next
+lexon.  The PASCAL program cannot be transcribed directly
+into Lucid because the interface between the main loop and
+the subloop is not one of the two supplied by Lucid.  The
+subloop is not running in parallel with the main loop, nor
+is it being invoked once for each input item.  In fact the
+program is not particularly hard to write using @whenever and
+@upon& (instead of using a subcomputation); but after writing a
+number of such programs one quickly gets the impression that
+these two operators are being used to 'simulate' something
+which should be made more directly available.
+.PP
+Of course, there would be no real difficulty in adding other
+forms of computation/subcomputation to the language.
+Suppose, for example, that we want an inner variable $V to
+have on the $t&th invocation of the subcomputation the
+sequence of values
+.EQ
+ {e sub t},~{e sub t+1},~{e sub t+2},~ ...
+.EN
+where $e is the value of some expression $E.  (This would
+allow the subcomputation to 'look ahead' in the main
+computation).  We could always extend the syntax to allow
+declarations of the form
+.PH
+ $V is remaining $E;
+.PE
+and make the appropriate changes to the definition of the
+semantics of where clauses; but this seems is a little ad
+hoc, and contrary to the algebraic approach of Lucid.

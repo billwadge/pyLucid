@@ -1,0 +1,69 @@
+.SP 16
+.SH
+10. USER DEFINED HYPERFILTERS
+.PP
+These hyper-operations, like until, are so useful the Llucid user would
+undoubtedly want to define his own. Unfortunately, this is
+not really possible, even though there is no restriction
+preventing Llucid function from appearing in user function definitions.
+The problem is that do-it-yourself superoperations cannot be imported
+inside where clauses; because (as we mentioned earlier)
+they will be distorted by
+stretching.  For example, the user could have a definition of until, and
+it would work fine within same clause where it is defined. 
+But in inner clauses, it will act very strange because it
+will have been stretched - treated as if it were 'really' a 
+hyperstream of stream functions, which it is not. 
+As a result, user definitions are useless, because
+they have to be copied out everywhere they are used.
+.PP
+Another serious problem arises when it is desired to use a
+where clause in defining one of these superfunctions.
+For example, it seems so natural to replace the definition of @remaining
+.PH
+ Remaining x = x Fby next Remaining x;
+.PE
+by
+.PH
+ Remaining x = y where y = x Fby next y end;
+.PE
+but it will not work work; @x has been stretched and @y compressed,
+and @remaining is not defined as desired.  Of course the
+problem is even worse when it is desired to use a where to
+give a recursive definition (of a do-it-yourself hyper-operation); 
+the function being defined gets stretched
+in its own definition; certainly not what is wanted.
+.PP
+The second part of this problem can be solved quite easily;
+we add another form of the where clause to the language, say
+@wherereally that acts normally and does not perform any
+stretching.  We could then define the current function by
+.PR
+ Current x = first r
+   wherereally
+    r = x Fby next r;
+   end;
+.PE
+However, this still does not solve the problem that functions like
+this, even when they are defined correctly, cannot be used
+inside an ordinary where (they can be used inside a
+wherereally but the wherereally does not provide a
+computation/subcomputation interface.  One obvious ad hoc solution is
+to let the user of a where clause specify a list of
+variables which are to be imported 'live', ie without
+stretching.  This is can be very tedious (a function used several
+levels deep must   be declared at each intervening level)
+and anyway opens the door to the dread 'dimensional shift'
+.PP
+The language LLucid described here adopts the simplest
+viable resolution of the trouble, namely by providing a
+fixed  set of two dimensional constants which (being
+constants) have 'diplomatic immunity' from stretching.  
+These constants by themselves are, as we have seen, enough to provide a rich
+variety of interfaces and provide a disciplined form of 
+dimensional manipulation.
+.PP
+The best solution would be to devise a convenient way to
+specify subcomputations strictly within a member of the
+Iswim family.  Iswim(HyLu(A)) is tantalizingly close,
+but the goal remains outside our grasp.

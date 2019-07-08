@@ -12,23 +12,23 @@ def CheckDups(e):
         pop.ForAll(OperationOperandL(e),CheckDups)
         return True
     if WhereP(e):
-        subj, body = DeWhere(e)
+        subj, wk, body = WhereD(e)
         CheckDups(subj)
         pop.ForAll(body,CheckDups)
         l = WhereLocalsL(e)
         dupset = pop.Dups(l)
         if pop.EmptySetP(dupset): return True
-        c,d = pop.DeMember(dupset)
+        c,d = pop.MembeDr(dupset)
         print("Where local "+pop.WordName(c)+" duplicated")
         exit()
     if DefinitionP(e):
         l = DefinitionFormalsL(e)
         dupset = pop.Dups(l)
         if not pop.EmptySetP(dupset):
-            c,d = pop.DeMember(dupset)
+            c,d = pop.AddD(dupset)
             print("Formal parameter "+pop.WordName(c)+" duplicated")
             exit()
-        lhs,rhs = DeDefinition(e)
+        lhs,es,rhs = DefinitionD(e)
         CheckDups(rhs)
         return True
     if CallP(e):
@@ -51,7 +51,7 @@ def CheckLocals(e):
         pop.ForAll(args,CheckLocals)
         return True
     if WhereP(e):
-        subj, body = DeWhere(e)
+        subj,wk, body = WhereD(e)
         CheckLocals(subj)
         pop.ForAll(body,CheckLocals)
         ll=WhereLhssL(e)
@@ -65,7 +65,7 @@ def CheckLocals(e):
             exit()
         return True
     if DefinitionP(e):
-        lhs,rhs = DeDefinition(e)
+        lhs,es,rhs = DefinitionD(e)
         if CallP(lhs):
             ll = CallActualsL(lhs)
             while ll != pop.Empty:
@@ -81,7 +81,7 @@ def CheckLocals(e):
 
 def ProgramEmbedded(pg):
     if WhereP(pg):
-        subj,body = DeWhere(pg)
+        subj,wk,body = WhereD(pg)
         NoEmbeddeds(subj)
         pop.ForAll(body,NoEmbeddeds)
         return
@@ -103,9 +103,9 @@ def NoEmbeddeds(e):
         prp.Term(e);print()
         exit()
     if DefinitionP(e):
-        lhs,rhs = DeDefinition(e)
+        lhs,es,rhs = DefinitionD(e)
         if WhereP(rhs):
-            subj,body = DeWhere(rhs)
+            subj,wk,body = WhereD(rhs)
             NoEmbeddeds(subj)
             pop.ForAll(body,NoEmbeddeds)
             return True

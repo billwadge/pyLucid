@@ -1,6 +1,6 @@
-import pio
+import pio,math
 from pop import *
-
+from math import sin, cos, tan, exp
 def SubexpressionL(e):
     """ list of proper immediate subexpressions of e """
     if LiteralP(e): return Empty
@@ -12,7 +12,7 @@ def SubexpressionL(e):
     if DefinitionP(e):
         return List2(Lhs(e),Rhs(e))
     if WhereP(e): 
-        subj, defs = WhereD(e)
+        subj, wk, defs = WhereD(e)
         return Cons(subj,defs)
     assert False, 'Weird term for subexp '+str(e)
     
@@ -26,7 +26,7 @@ def LocalsL(e):
     
 def Definee(d):
     """ the variable defined by definition d """
-    lhs, rhs = DefinitionD(d)
+    lhs, es, rhs = DefinitionD(d)
     if VarP(lhs): return Var(lhs)
     if CallP(lhs) and VarP(CallFun(lhs)):
         return Var(CallFun(lhs))
@@ -65,7 +65,7 @@ def IfAlternativeTrue(e):
 def IfAlternativeFalse(e):
     return El4(e)
     
-def Deif(e):
+def IfD(e):
     return IfCondition(e),IfAlternativeTrue(e),IfAlternativeFalse(e)
     
 def CallC(f,l):
@@ -73,13 +73,19 @@ def CallC(f,l):
     assert ListP(f), 'CallC given f nonexpression '+str(f)
     return List3(CALLWord,f,l)
     
-def WhereC(s,dl):
+def WhereC(s,wk,dl):
     """ create a where clause """
-    return List3(WHEREWord,s,dl)
+    return List3(wk,s,dl)
     
 def WhereP(t):
-    return Head(t) == WHEREWord
+    return Head(t) == WHEREWord or Head(t) == WHERELOOPWord
     
+def WhereReallyP(t):
+    return Head(t) == WHEREWord 
+    
+def WhereLoopP(t):
+    return Head(t) == WHERELOOPWord
+
 def WhereSubject(t):
     return El2(t)
     
@@ -88,24 +94,24 @@ def WhereDefinitionsL(t):
     
 def WhereLocalsL(w):
     """ the local variables of where clause w """
-    subj, defs = WhereD(w)
+    subj, wk, defs = WhereD(w)
     res = ConsAll(defs, Definee)
     return res
     
 def WhereLhssL(w):
-    subj, defs = WhereD(w)
+    subj, wk, defs = WhereD(w)
     lhss = Empty
     while defs != Empty:
         d, defs = ConsD(defs)
-        lhs, rhs = DefinitionD(d)
+        lhs,es, rhs = DefinitionD(d)
         lhss = Append(lhss,List1(lhs))
     return lhss
     
-def DeWhere(t):
-    return WhereSubject(t),WhereDefinitionsL(t)
-    
 def WhereD(t):
-    return WhereSubject(t),WhereDefinitionsL(t)
+    return WhereSubject(t),WhereKind(t),WhereDefinitionsL(t)
+    
+def WhereKind(t):
+    return El1(t)
     
 def CallP(t):
     return Head(t) == CALLWord
@@ -121,9 +127,6 @@ def CallActualsL(t):
     
 def AcallC(funvar,len):
     return OperationC(ACALLWord, List2(VarC(funvar),NumC(len)))
-    
-def DeCall(t):
-    return CallFun(t),CallActualsL(t)
 
 def CallD(t):
     return CallFun(t),CallActualsL(t)
@@ -132,47 +135,41 @@ def ValofC(dl):
     return Cons(VALOFWord,dl)
     
 def DefinitionP(d):
-    return El1(d) == EQUALWord
+    return El1(d) == EQUALWord or El1(d) == ISWord
     
 def VarDefinitionP(d):
-    if El1(d) != EQUALWord: return False
-    lhs, rhs = DefinitionD(d)
+    if not (El1(d) == EQUALWord or El1(d) == ISWord): return False
+    lhs, es, rhs = DefinitionD(d)
     return VarP(lhs)
     
 def FunDefinitionP(d):
-    if El1(d) != EQUALWord: return False
-    lhs, rhs = DefinitionD(d)
+    if not (El1(d) == EQUALWord or El1(d) == ISWord): return False
+    lhs, es, rhs = DefinitionD(d)
     return CallP(lhs)
     
-def DeFunDefinition(d):
-    lhs, rhs = DefinitionD(d)
-    fun, formals = DeCall(lhs)
-    return Var(fun), formals, rhs
-    
 def FunDefinitionD(d):
-    lhs, rhs = DefinitionD(d)
-    fun, formals = DeCall(lhs)
+    lhs, es, rhs = DefinitionD(d)
+    fun, formals = CallD(lhs)
     forvars = ConsAll(formals,Var)
-    return Var(fun), forvars, rhs
+    return Var(fun), forvars, es, rhs
     
-def FunDefinitionC(v,forvars,rhs):
+def FunDefinitionC(v,forvars,es,rhs):
     formals = ConsAll(forvars,VarC)
     fun = CallC(VarC(v),formals)
-    return DefinitionC(fun,rhs)
+    return DefinitionC(fun,es,rhs)
     
 def VarDefinitionD(d):
-    lhs, rhs = DefinitionD(d)
-    return Var(lhs), rhs
+    lhs, es,rhs = DefinitionD(d)
+    return Var(lhs), es,rhs
     
-def DeVarDefinition(d):
-    lhs, rhs = DefinitionD(d)
-    return Var(lhs), rhs
+def VarDefinitionC(v,es,rhs):
+    return DefinitionC(VarC(v),es,rhs)
        
-def DefinitionC(lhs,rhs):
-    return List3(EQUALWord,lhs,rhs)
+def DefinitionC(lhs,es,rhs):
+    return List3(es,lhs,rhs)
     
 def DefinitionFormalsL(d):
-    l,r= DefinitionD(d)
+    l,es,r= DefinitionD(d)
     if VarP(l): return Empty
     acts =  CallActualsL(l)
     return ConsAll(acts,Var)
@@ -183,11 +180,11 @@ def Lhs(d):
 def Rhs(d):
     return El3(d)
     
-def DeDefinition(d):
-    return Lhs(d), Rhs(d)
+def Es(d):
+    return El1(d)
     
 def DefinitionD(d):
-    return Lhs(d), Rhs(d)
+    return Lhs(d), Es(d), Rhs(d)
     
 def ListexpressionC(al):
     return Cons(LLISTPARENWord,al)
@@ -331,13 +328,13 @@ prefixes =set()
 infixes = set()
 postfixes = set()
 nullfixes = set()
-reservedwords = Reserve(pio.Popliteral("[if then else fi where end valof]"))
+reservedwords = Reserve(pio.Popliteral("[if then else fi where whereloop end valof]"))
 
-NewFixes(pio.Popliteral("[[100 sin 65][100 cos 65][100 tan 65][100 exp 65][100 abs 40][100 log 65][100 log2 65][100 sqrt 65][100 pi 100][100 phi 100]]"))
+NewFixes(pio.Popliteral("[[100 sin 65][100 cos 65][100 tan 65][100 exp 65][100 abs 44][100 log 65][100 log2 65][100 sqrt 65][100 pi 100][100 phi 100]]"))
 NewFixes(pio.Popliteral("[[100 tl 65][100 not 65][100 isatom 65][100 islist 65][100 isnumber 65][100 isnil 65][100 iseod 65][100 isstring 65][100 isword 65][100 iserror 65]]"));
-NewFixes(pio.Popliteral("[[100 first 65][100 init 65][100 id 65][100 succ 65][100 next 65][100 pre 65][10 fby 9][10 sby 9][9 ybf 10][10 wvr 11][10 while 11][10 swvr 11][10 asa 11][10 attime 11][10 atspace 11]]"))
+NewFixes(pio.Popliteral("[[100 first 65][100 First 65][100 init 65][100 id 65][100 current 65][100 succ 65][100 # 65][100 $ 65][100 next 65][100 Next 65][100 pre 65][100 contemp 65][100 active 65][10 fby 9][100 Fby 65][10 sby 9][10 & 9][9 ybf 10][10 wvr 11][10 while 11][10 swvr 11][10 asa 11][10 attime 11][10 atspace 11]]"))
 
-NewFixes(pio.Popliteral("[[20 :: 19][25 or 24][30 and 29][40 <> 39][40 < 39][40 <= 39][40 eq 39][40 ne 39][40 >= 39][40 > 39][45 - 44][45 + 44][50 * 49][50 / 49][50 div 49][50 mod 49][55 ** 54][55 ^ 54][100 hd 65][100 index 100][100 sindex 100][100 eod 100][100 eos 100][100 true 100][100 false 100]]"));
+NewFixes(pio.Popliteral("[[20 :: 19][25 or 24][30 and 29][40 <> 39][40 < 39][40 <= 39][40 eq 39][40 ne 39][40 >= 39][40 > 39][45 - 44][45 + 44][50 * 49][50 / 49][50 div 49][50 mod 49][55 ** 54][55 ^ 54][100 hd 65][100 input 100][100 index 100][100 sindex 100][100 eod 100][100 eos 100][100 true 100][100 false 100]]"));
 
 opsymbols = prefixes.union(infixes).union(prefixes).union(postfixes).union(nullfixes)
 opsymbols.add(YCALLWord)
@@ -347,6 +344,9 @@ opsymbols.add(ACTUALWord)
 opsymbols.add(GLOBALWord)
 opsymbols.add(EODWord)
 opsymbols.add(EOSWord)
+opsymbols.add(ATTIME2Word)
+opsymbols.add(FBY2Word)
+opsymbols.add(APPLYWord)
 
 
 

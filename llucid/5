@@ -1,0 +1,84 @@
+.SP 9
+.SH
+5. BUILDING-IN DIMENSIONAL SHIFT
+.PP
+This approach to subcomputations still cannot be recommended.
+True, the discipline necessary to avoid dimensional mixups is
+now much simpler: all globals of a subcomputation should
+have @Active applied to them, and @Contemp should be applied to
+the result.  The other special operations, like @Current and
+@remaining, can be applied at will and although they may yield
+strange results they will not cause a dimensional shift.
+Nevertheless it is very tedious to include all the necessary
+applications of @Active.
+.PP
+What is still required is a linguistic way of enforcing the
+discipline and saving the poor programmer the worry of
+balancing @Active-Contemps's.
+The easiest way to do this is to generalise the way in which Lucid links
+the Iswim @where clause (which really only hides definitions) and the idea of
+subcomputation.  We do this by redefining the meaning of
+where so that @Active is automatically (and 'secretly')
+applied to the globals of a where, and Contemp is automatically
+and secretly applied to the result.
+.PP
+This is how ultralucid (or "Llucid") works. Llucid is the 
+same as $Iswim(Llu(A)) except that the meaning of a clause
+.PH
+    $S 
+     where
+      $$V sub 0& = $$E sub 0&;
+      $$V sub 1& = $$E sub 1&;
+        !...
+      $$V sub k& = $$E sub k&;
+     end
+.PE
+in an interpretation $I is the result of applying @Contemp to
+the meaning of $S in $I'' where
+.IP (i) 
+$I'' is the least environment in which all the equations in
+the body are true and which differs from  $I' at most in the values
+assigned the locals;
+.IP (ii) 
+$I' is the environment identical to $I except that  
+$$I'(G) ~=~ Active(I(G))&
+for every global $G of the clause.  (We are still
+assuming the globals are all nullaries).
+.PP
+Here are the preceding two examples written in Llucid
+.PR
+  y asa y > n
+   where
+     n is Current n;
+     y = Remaining x;
+   end
+.PE
+.PR
+ maxsofar eq Current p
+   where
+     maxsofar = p fby if maxsofar > p then maxsofar else p fi;
+   end
+.PE
+LLucid is therefore not a member of Iswim family. However, if no
+Llucid or ordinary Lucid operations are used, (in other words, if the program
+is !syntactically an Iswim program), then the result is the same as
+the corresponding Iswim program (stretched out through hypertime).  
+This can be proved using simple identities like
+.PH
+  Contemp(Active(x)+Active(y)) = x+y;
+.PE
+If none of the special Llucid operations are used, (in other words, if the
+program is !syntactically an ordinary Luswim program), the
+result is the same as the corresponding infinite Lucid program
+(again with the result 'hyped up' into a hyperstream).
+This can be proved using identities like
+.PH
+ Contemp(next(Active(x))) = x;
+ Contemp(Active(x) fby Active(y)) = x fby y;
+.PE
+In other words, the dimensional stretching and contracting
+which Llucid builds in to the where clause has no overall
+effect (the stretching and contracting cancel out) if
+none of the special Llucid operations are used. Without using
+these operations, the user cannot 'detect' 
+the fact that hyperstreams are being used.

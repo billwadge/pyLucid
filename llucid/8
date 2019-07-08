@@ -1,0 +1,93 @@
+.SP 13
+.SH
+8. THE HYPERSTREAM PRIMITIVES
+.PP
+LLucid makes possible a wide variety of interfaces between
+the main computation and the subcomputation which can be
+specified with operations other than @Current and @Remaining&.
+The two most important primitives  are the 'level 1'
+analogs of the ordinary ('level 0') Lucid operations @next
+and @fby&.  They are  @Next  and @Fby  where
+.EQ I
+  Next(y) sub t0,t1,t2,..., ~=~
+   y sub t0, (t1+1) t2, ...,
+.EN
+.EQ I
+  Fby(y,z) sub t0, t1, t2, ..., ~=~ mark
+  y sub t0, 0, t2, t3, ...,~~(t1,=0)
+.EN
+.EQ I
+  Fby(y,z) sub t0, t1, t2, ..., ~=~ lineup
+    z sub t0,(t1,-1),t2,...,~~(t1,>0)
+.EN
+In terms of double sequences, @Next transforms the double sequence
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into the double sequence
+.EQ
+  <<b0,b1,b2,...>,
+   <c0,c1,c2,...>,
+   <d0,d1,d2,...>...>
+.EN
+In other words, the sequence of values taken on by @Next(x) in
+the present invocation of a subcomputation is the range of
+values @x takes on in the !next (succeeding) subcomputation.
+Similarly, @Fby transforms the double sequences
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+and
+.EQ
+  <<x0,x1,x2,...>,
+   <y0,y1,y2,...>,
+   <z0,z1,z2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a1,a2,...>,
+   <x0,x1,x2,...>,
+   <y0,y1,y2,...>,...>
+.EN
+Thus the range of values taken on by @@x Fby y& in  the first
+invocation of a given sub computation is that taken on by @x,
+but thereafter (ie in succeeding subcomputations) that taken on by
+@y in the previous subcomputation.  We also have a
+level one analog of first (we call it Original) which
+transforms the double sequence
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a1,a2,...>,
+   <a0,a1,a2,...>,
+   <a0,a1,a2,>,...>
+.EN
+so that the range of values taken on by Original(x) during a
+given subcomputation is that taken on by @x in the first
+(original) subcomputation.
+.PP
+It is not hard to see how the other operations can be
+defined with @Next and @Fby&. The operation @Remaining has the
+definition
+.PH
+ Remaining x = x Fby next Remaining x;
+.PE
+and @Current the definition
+.PH
+ Current x = first Remaining x;
+.PE
+Notice that it follows directly from this definition that
+.PH
+ first Current x = Current x,;
+.PE
+In other words, within a given subcomputation  @@Current x&  is
+constant (we called objects constant in $$t0,& !quiescent -
+temporarily unchanging).

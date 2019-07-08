@@ -1,0 +1,1008 @@
+.SP 1
+.SH
+CHAPTER X:  LLUCID, LUCID WITH MULTIDIMENSIONAL TIME
+.PP
+We have already seen that simple primitives of 'ordinary' Lucid 
+allow for an amazing variety of different kinds of
+computation.
+However, ordinary Lucid still provides only two forms of
+interaction between a computation and a subcomputation.
+Programmers often (and quite rightly) find Lucid somewhat
+restrictive in this sense. People used to conventional
+imperative languages perceive it as inability to "do I/O in
+a subcomputation".  Suppose, for example, that we wanted to
+perform a lexical analysis of a stream of input characters.
+We want to bundle up groups of characters into lexical units
+("lexons") and output the stream of lexons.  A PASCAL
+programmer would write a main loop which produces a lexon
+each 'time round', with a subloop that on each invocation
+runs through as many characters as are needed for the next
+lexon.  The PASCAL program cannot be transcribed directly
+into Lucid because the interface between the main loop and
+the subloop is not one of the two supplied by Lucid.  The
+subloop is not running in parallel with the main loop, nor
+is it being invoked once for each input item.  In fact the
+program is not particularly hard to write using @whenever and
+@upon& (instead of using a subcomputation); but after writing a
+number of such programs one quickly gets the impression that
+these two operators are being used to 'simulate' something
+which should be made more directly available.
+.PP
+Of course, there would be no real difficulty in adding other
+forms of computation/subcomputation to the language.
+Suppose, for example, that we want an inner variable $V to
+have on the $t&th invocation of the subcomputation the
+sequence of values
+.EQ
+ {e sub t},~{e sub t+1},~{e sub t+2},~ ...
+.EN
+where $e is the value of some expression $E.  (This would
+allow the subcomputation to 'look ahead' in the main
+computation).  We could always extend the syntax to allow
+declarations of the form
+.PH
+ $V is remaining $E;
+.PE
+and make the appropriate changes to the definition of the
+semantics of where clauses; but this seems is a little ad
+hoc, and contrary to the algebraic approach of Lucid.
+.SP 2
+.SH
+1. THE HIGHER-ORDER TIME PARAMETERS
+.PP
+The basic principle of the Lucid approach to time and change
+might be termed the 'algebraic' one.  A variable is
+treated mathematically as denoting an infinite history of
+all its various values.  Lucid does not have an
+iterative construct; instead, it has 'time bending'
+operations like @next and @fby which transform histories.  In
+the treatment of nesting, however, we seem to have violated
+that principle. As a result we are unable to apply the
+algebraic approach to the problem of specifying the
+computation/subcomputation interface.
+.PP
+In the following simple program involving nesting,
+.PR
+   f asa k eq 1
+     where
+      N is current n;
+       k = N fby k-1;
+       f = 1 fby k*f;
+     end
+.PE
+consider the identifier @f&. The programmer certainly thinks
+of @f& as varying with time; but @f& has no value at all
+assigned to it on the 'outside' of the clause.  The meaning
+of the clause is specified in terms of a whole family of
+temporary internal environments, each of which assigns its
+own history to @f&.  Lucid as it stands assigns no single
+object to @f& which summarises its total activity in the same
+way that the history <1,2,3,...> summarises the total
+activity of @i when @@i = 1 fby i+1&.;
+.PP
+The reason that Lucid does not assign a single history to @f&
+is that its activity is too complicated to be described by a
+single infinite sequence of values.  In operational terms, @f&
+takes on a whole infinite sequence of values for every step
+in the main computation; thus a complete summary of the
+activity of @f& requires a !sequence!of !sequences of values;
+in other words, a two dimensional sequence.
+.PP
+Suppose for example, that the input @n to the above program
+takes on the values 3, 5, 7, ... .  Then in the first
+invocation of the where body @f runs through the values
+.EQ
+  1, 3, 6, 6, 0, 0, ...;
+.EN
+on the second invocation it runs through the values
+.EQ
+  1, 5, 20, 120, 120, ...;
+.EN
+and on the third, through the values
+.EQ
+ 1, 7, 42, 210, 840, ...
+.EN
+(these are 'virtual' values; on each step only finitely many
+of them need actually be computed).  The entire activity can
+therefore be summarised by the doubly infinite sequence
+.EQ
+ <<1,3,6,6,0,...>,<1,5,20,120,120,...>,<1,7,42,210,840,...>,...>.
+.EN
+Each particular value taken on by @f can be thought of as
+determined by !two independent time parameters. 
+The first is the 'inner'
+or 'local' time $$t0&; this is the number of steps completed in the
+current subcomputation. 
+The second is the 'outer' or 'global' time $$t1&.
+This is the number of steps completed in the main
+computation.  The history of @f can therefore also be thought
+of as a function $f of two integer arguments with 
+$$f(t0,t1)&
+(we will use the notation $$f sub t0,t1&) 
+being the value taken on
+by @f at inner time $$t0& and outer time $$t1&.  
+Thus $$f sub 4,2& is 840,
+and the double sequence given above is
+.EQ
+ <<f0,0,f1,0,f2,0,...>,
+  <f0,1,f1,1,f2,1,...>,
+  <f0,2,f1,2,f2,2,...>...>
+.EN
+This approach can be easily be extended to give generalised 'histories' 
+for variables defined in arbitrarily deeply
+nested clauses.  For example, the total activity of a
+variable like @b& in
+.PR
+   h+k asa p
+    where
+     N is current n
+     h = ...;
+     p = ...;
+     k = ...
+     where
+      K is current k
+      q = ...;
+      r = ...
+       where
+        R is current r-q
+        b = ...;
+        c = ...;
+       end
+     end
+    end
+.PE
+is really a sequence of sequences of sequences of sequences.
+Alternatively, we can think of each individual value take on
+by @b& as being specified by !four time parameters 
+$$t0&, $$t1&, $$t2&
+and $$t3&.  
+As before, $$t0& is the innermost, local time (in a
+sense it varies most 'rapidly').  The parameter $$t1&
+represents time in the immediately enclosing clause (where @r
+is defined), $$t2& represents time in the next enclosing clause
+(where @k is defined), and $$t sub 3& represents outermost time, the
+steps in the 'main' computation.  Thus the total activity of
+@b can be expressed as a function $b with domain
+$$N \(mu  N \(mu  N \(mu N&.
+.PP
+Since Lucid allows unlimited nesting of computations, a
+completely general approach must involve sequences of
+arbitrarily large dimension.  One way to proceed is to
+define the value of a variable to be a nested sequence of
+the appropriate dimension. Complications arise, however,
+when histories of different dimensions are combined.  For
+example, when adding two generalised history it is
+necessary to 'coerce' the history of smaller dimension into
+one of larger dimension.  In particular, each constant has
+infinitely many representatives, one for each dimension.
+.SP 4
+.SH
+2. HYPERSTREAMS
+.PP
+In order to avoid these complications we define a !!generalised history& 
+to be instead a function of the entire
+infinite sequence 
+$$t0&, $$t1&, $$t2&, ...  of time parameters.  In
+other words,  a generalised history (or !hyperstream&) is
+a function whose domain is the set $$N sup N& of all
+infinite sequences of natural numbers.  These objects are in
+a sense streams whose dimension is formally infinite.  In
+actual programs, though, the values of any particular
+variable will depend on only finitely many of the time
+parameters.  It is extremely important to understand that
+time is parametrised from the inside out; $$t0& is the time in
+the current local computation, $$t1& that in the enclosing
+computation, $$t2& that in the next enclosing computation and
+so on.
+.PP
+It is not hard to see how to define the data operations and
+normal Lucid operations on hyperstreams; they are simply
+extended pointwise to the 
+$$t1&, $$t2&, $$t3& ... parameters.  For
+example, if @a and @b& have hyperstreams $a and $b respectively
+as their values, then the value of @a+b is the hyperstream
+$a+b where
+.EQ
+(a+b) sub t0,t1,t2 ... ~=~ 
+  a sub t0,t1,t2 ...~+~
+      b sub t0,t1,t2 ... 
+.EN
+The value of @next(a) is the stream $next(a) where
+.EQ
+ next(a) sub t0,t1,t2 ... ~=~ 
+    a sub (t0+1),t1,t2 ... .
+.EN
+because @next(a) is the value @a has on the next step of the
+!local computation.  From the global point of view, this is
+the value which @a has on the !immediately succeeding step of
+the computation.  It is the value obtained when only the
+innermost computation is advanced one step, ie when all the
+enclosing computations remain suspended.  In the same way the
+hyperstream operations @first and @fby are defined by
+.EQ I
+ first( a) sub  t0,t1,t2... ~=~ 
+  a sub 0 t1,t2 ...
+.EN
+.EQ I
+ fby(a,b) sub t0,t1,t2... ~=~ mark
+    a sub 0 t1,t2 ... ~~(t0~=~0);
+.EN
+.EQ I
+~=~ lineup b sub (t0-1),t1,t2 ...  ~~(t0>1)
+.EN
+.PP
+In this way we can define a hyperdimensional operator $Llu which is the
+analog of the ordinary operator $Lu&. Given any algebra $A,
+$Llu(A) is the algebra of hyperstreams of elements of the universe of $A,
+with @first&, @next&, @fby and so on defined as above.
+.PP
+The operator $Llu is not, however, very useful - at least as we have just
+defined it.
+The whole point of considering hyperstreams, of course,
+is to permit an algebraic approach to nesting and other forms of interface.
+Hyperstreams make it possible to 'calculate' with interface histories;
+but we obviously need new operation(s) which give the effect of
+freezing, taking the remainder, or whatever else we may want.
+.SP 5
+.SH
+3. NESTING WITH HYPERFILTERS
+.PP
+Let us begin by trying to devise a purely algebraic approach to simple
+nesting (which at present is 'wired into' the definition of the where clause).
+Consider the 'iterative factorial' example
+given earlier, and let $n be the hyperstream value
+of @n.  We want to define @k to vary faster than @n. 
+In ordinary Lucid, this is done 
+with the @@is Current& declaration. Inside the clause, the
+value of @n at time $$t0,t1,t2 ...&
+is that of @n at time $$t1,t2,t3 ... &
+and so the value of @k at time $$t0,t1,t2 ...&
+in the clause is $$n sub t0,t1,t2...~-~t0&.
+If the value of @n at time $t& !outside the clause is
+$$2*t0+1&, that of @k at time $$t0,t1,t2...& 
+!inside the clause is therefore
+$$2*t1+1 - t0&.  In order to define @k in this way without 
+@@is Current&, we obviously need at least one operation which 'shifts'
+the time parameters. In fact, we really need two, one to 'freeze' 
+globals for use inside the clause, and another to
+unfreeze the results for export. In the same program, for example, the value
+of the subject of the clause at time $t& inside the clause is 
+$$n sub t1,t2,t3 ...&
+factorial; independent of $$t0&, but not the same hyperstream
+as the one whose value at time $$t0,t1,t2...& 
+is the factorial of $$n sub t0,t1,t2 ...&.
+.PP
+The simplest pair of functions which give this effect are the
+functions @Latest and its 'inverse' (which we now call @Contemp&)
+which were introduced in the original Lucid paper.  For any hyperstream $n,
+.EQ
+  Latest(n) sub t0,t1,t2... ~=~ 
+  n sub t1,t2,t3 ...
+.EN
+and
+.EQ
+  Contemp(n) sub t0,t1,t2... ~=~ 
+   n sub t0,t0,t1,t2 ...
+.EN
+The value of @Contemp(x) is the value which @x has inside a loop
+when the inner time ($$t0&) 'catches up' with the outer time ($$t1&);
+it is the !Contemporary value of @x&.
+.PP
+It is now easy to check that @k inside the clause has the
+value defined by the equation
+.PH
+ k = Latest(n) fby k-1;
+.PE
+and that the whole clause is equivalent to the clause
+.PR
+ Contemp(f asa k eq 1)
+   where
+     n is Latest(n);
+     k = n fby k-1;
+     f = 1 fby k*f;
+   end
+.PE
+in $Iswim(Llu(A))
+.PP
+This approach definitely gives nesting effect without the
+tampering with @where clause; and it can be extended easily
+to handle other forms of computation/subcomputation interface.
+For example, we can define @restof by
+.EQ
+ Restof(x) sub t0,t1,t2... ~=~ 
+  x sub t1+t0,t2,t3 ...
+.EN
+then
+.PR
+ Contemp(M asa restof(x) eq 0)
+   where
+    M = 0 fby M+1;
+   end
+.PE
+is a program which tells how long it will be before @x is
+next 0; if @x is the sequence (we assume the value of @x
+depends only on $$t0&)
+.EQ
+ <3, 5, 0, 5, 0, 0, 8, 4, 7, 0, ... >
+.EN
+then the value of the clause (also depending only on $$t0&) is
+the sequence
+.EQ
+ <2, 1, 0, 1, 0, 0, 3, 2, 1, 0, ... >
+.EN
+.PP
+This approach cannot, however, be recommended. The problem with it is
+that @Latest and its dual are very dangerous. 
+The two operations shift the time dimensions and
+unrestricted use (as in the expression @x+Latest(x)&) allows bizarre
+programs which cannot be understood in terms of pipeline dataflow
+(if they can be understood at all).
+Of course one can devise a methodology for using @Latest
+and its partner which avoids dimensional mismatches; 
+but using this methodology is roughly equivalent
+to writing in ordinary Lucid and using @@is Current&.
+Nothing is really gained by manipulating hyperstreams directly.
+Standard Lucid enforces the discipline, and spares the programmer
+the necessity of writing @Contemp&.
+.SP 7
+.SH
+4. DIMENSIONAL SHIFTING
+.PP
+There is, however, a more sensible way to use hyperstreams.
+There is no real need to have an endless supply of dimension
+shifting operations, one for each new form of subcomputation
+interface we devise. The variation in interfaces can be obtained
+using a number of simpler operations which take
+$$t1& into account but do not alter dimension.  The function
+@Latest may be the simplest dimension altering operation but it is not
+general. The function @Latest is associated with
+one form of inner/outer interface,
+namely total suspension of the outer computation (nesting). 
+What we need is another subcomputation entering
+primitive that does not have any !!a priori& commitment to any
+particular kind of interface.
+.PP
+There is indeed such a function, which we call @Active&.
+It is defined as follows:
+.EQ
+  Active(x) sub t0 z t1 t2 ... ~=~ 
+    x sub t0,t1,t2...
+.EN
+Simple manipulations with time parameters will verify that
+.PH
+  Contemp(Active(x)) = x;
+.PE
+The meaning of @Active& can best be grasped if we assume that
+the value of @x is independent of $$t1&, $$t2&, $$t sub 3&
+and so on;
+in other words, that @x is 'really' just a sequence of the form
+.EQ
+ <x0, x1, x2, ... >.
+.EN
+In this case the value of @Active(x) depends only on $$t0& and
+$$t1& and is 'really' the double sequence
+.EQ
+ <<x0,x1,x2,...>,
+  <x0,x1,x2,...>,
+  <x0,x1,x2,...>,...>.
+.EN
+and this can be interpreted as follows: the value of @x
+inside the computation is the same !stream as outside; on
+each invocation it is restarted and runs through its
+complete set of values.  The variable is !Active inside
+the subcomputation.
+By comparison, the value of
+@Latest(x) can be thought of in the same way as the double
+sequence
+.EQ
+  <<x0,x0,x0,...>,
+   <x1,x1,x1,...>,
+   <x2,x2,x2,...>,...>
+.EN
+so that throughout each subcomputation it is constantly the
+outer individual !value of @x.  The operation @Contemp&, can
+also be understood in terms of double sequences.
+Informally speaking, it
+collapses a double sequence into a single sequence by sampling.
+It turns
+.EQ
+  <a0,a1,a2,...>,
+  <b0,b1,b2,...>,
+  <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+ <a0,b1,c2,...>.  
+.EN
+(In this way it is easy to see why Contemp(Active(x)) is the same as @x&).
+.PP
+The function @Active in a sense gives nesting without freezing.
+If we want freezing as well, we need another function to do it
+(but this function does not have to change dimensions).
+The obvious name for the new function is @Current; 
+to find out how @Current works, we need to solve the equation
+@@Current(Active(x)) = Latest(x)&. It is not hard to deduce that;
+the required definition is
+.EQ
+  Current(y) sub t0,t1,t2... ~=~ 
+  y sub t1 t1 t2 t sub 3 ...
+.EN
+In terms of double sequences, @Current transforms
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a0,a0,...>,
+   <b1,b1,b1,...>,
+   <c2,c2,c2,...>,...>.
+.EN
+In the same way the 'from now on' effect can be obtained
+with the function Remaining where
+.EQ
+  Remaining(x) sub t0,t1,t2... ~=~ 
+  x sub (t1+t0) t1 t2 ....
+.EN
+The function Remaining  transforms the sequence
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a1,a2,...>,
+   <b1,b2,b3,...>,
+   <c2,c3,c4,...>,...>
+.EN
+and it is easily verified that  @@Remaining(Active(x)) = restof(x)&.
+.PP
+Here are two simple $Iswim(Llu(A)) programs which use this
+explicit algebraic approach to specifying subcomputations
+.PR
+ Contemp( y asa y > n)
+   where
+     n = Current Active n;
+     y = Remaining Active  x;
+   end
+   
+ Contemp( maxsofar eq Current Active p)
+   where
+     maxsofar = Active(p) fby if maxsofar > Active p;
+                            then maxsofar else Active p fi
+   end
+.PE
+The first finds the first-encountered present or future
+value of @x which is greater than the present (Current) value
+of @n. The second tests if the Current value of @p is the greatest
+so far.
+.PP
+These various strange operations on hyperstreams (we could call them
+!hyperfilters) may seem rather far fetched.  
+We can still think of programs using hyperfilters in terms of
+pipeline dataflow, but a realistic implementation along those
+lines could be very complicated. 
+Fortunately, however, hyperstreams and hyperfilters
+are quite simple from the tagged-dataflow point of view.
+The pLucid interpreter already handles multidimensional 'time tags';
+with very little work it could be made accept programs with hyperfilters.
+There is therefore much to be gained by extending Lucid with hyperstreams.
+We could greatly increase the power and simplicity of the language,
+without at the same time greatly increasing the complexity of the
+implementation.
+.SP 9
+.SH
+5. BUILDING-IN DIMENSIONAL SHIFT
+.PP
+This approach to subcomputations still cannot be recommended.
+True, the discipline necessary to avoid dimensional mixups is
+now much simpler: all globals of a subcomputation should
+have @Active applied to them, and @Contemp should be applied to
+the result.  The other special operations, like @Current and
+@remaining, can be applied at will and although they may yield
+strange results they will not cause a dimensional shift.
+Nevertheless it is very tedious to include all the necessary
+applications of @Active.
+.PP
+What is still required is a linguistic way of enforcing the
+discipline and saving the poor programmer the worry of
+balancing @Active-Contemps's.
+The easiest way to do this is to generalise the way in which Lucid links
+the Iswim @where clause (which really only hides definitions) and the idea of
+subcomputation.  We do this by redefining the meaning of
+where so that @Active is automatically (and 'secretly')
+applied to the globals of a where, and Contemp is automatically
+and secretly applied to the result.
+.PP
+This is how ultralucid (or "Llucid") works. Llucid is the 
+same as $Iswim(Llu(A)) except that the meaning of a clause
+.PH
+    $S 
+     where
+      $$V sub 0& = $$E sub 0&;
+      $$V sub 1& = $$E sub 1&;
+        !...
+      $$V sub k& = $$E sub k&;
+     end
+.PE
+in an interpretation $I is the result of applying @Contemp to
+the meaning of $S in $I'' where
+.IP (i) 
+$I'' is the least environment in which all the equations in
+the body are true and which differs from  $I' at most in the values
+assigned the locals;
+.IP (ii) 
+$I' is the environment identical to $I except that  
+$$I'(G) ~=~ Active(I(G))&
+for every global $G of the clause.  (We are still
+assuming the globals are all nullaries).
+.PP
+Here are the preceding two examples written in Llucid
+.PR
+  y asa y > n
+   where
+     n is Current n;
+     y = Remaining x;
+   end
+.PE
+.PR
+ maxsofar eq Current p
+   where
+     maxsofar = p fby if maxsofar > p then maxsofar else p fi;
+   end
+.PE
+LLucid is therefore not a member of Iswim family. However, if no
+Llucid or ordinary Lucid operations are used, (in other words, if the program
+is !syntactically an Iswim program), then the result is the same as
+the corresponding Iswim program (stretched out through hypertime).  
+This can be proved using simple identities like
+.PH
+  Contemp(Active(x)+Active(y)) = x+y;
+.PE
+If none of the special Llucid operations are used, (in other words, if the
+program is !syntactically an ordinary Luswim program), the
+result is the same as the corresponding infinite Lucid program
+(again with the result 'hyped up' into a hyperstream).
+This can be proved using identities like
+.PH
+ Contemp(next(Active(x))) = x;
+ Contemp(Active(x) fby Active(y)) = x fby y;
+.PE
+In other words, the dimensional stretching and contracting
+which Llucid builds in to the where clause has no overall
+effect (the stretching and contracting cancel out) if
+none of the special Llucid operations are used. Without using
+these operations, the user cannot 'detect' 
+the fact that hyperstreams are being used.
+.SP 11
+.SH
+6. NONRECURSIVE EQUALITY
+.PP
+At first sight Llucid appears not to be an extension of
+Lucid itself (as opposed to Luswim) because freezing is treated
+differently syntactically (Llucid has no built in @@is current& construct).  
+In Llucid the factorial example could be written
+.PR
+   f asa k eq 1
+     where
+      k = current n fby k-1;
+      f = 1 fby k*f;;
+     end;
+.PE
+but the original Lucid version (given at the beginning of
+the chapter) is not syntactically a Llucid program.
+.PP
+The discrepancy cam be easily resolved once we realise that
+the Lucid @is& is really (or can be thought of as) just the original Iswim's
+!nonrecursive equality.  Recall that in original Iswim definitions
+were by default nonrecursive.  In a nonrecursive @where clause,
+right hand side expressions referred
+to !outer values of variables. If (in original Iswim) recursion was desired
+(so that right hand sides had inner values),
+this had to be made explicit by using @whererec or @letrec&. 
+Our new Iswim makes recursion the default, so that if nonrecursion is
+desired it would have to be explicitly indicated.  
+Using @is& is the explicit indication.
+.PP
+The @is& can therefore be used in Luswim or Iswim, eg
+.PR
+ x+y
+  where
+   x = 2;
+   y = z*t
+    where
+     z is x+1
+     t = x+1;
+     x = 3;
+    end
+  end
+.PE
+The value of this Iswim clause is therefore 14; in the
+innermost clause @z is defined equal to the !outer value of @x
+(namely 2) but @t is defined to be the !inner value of @x
+(namely 3).  It is even legal to have a nonrecursive
+definition of the form  @h is @h+1&; it means simply that
+!inside the clause the value of @h is the value it has
+!outside plus one.
+.PP
+In the language Lucid, though, @is& cannot be interpreted in
+this way because @current& has no semantics; instead, we had
+to give a semantics to @@is current& declarations.  In
+Llucid, however, @is& can once again be given the
+nonrecursive (or better, nonselfreferential) interpretation
+and it is not hard to see that the meaning of a Lucid
+program interpreted as such is the same as its
+meaning as a Llucid (with @is&) program. (Again, the meaning of the
+Lucid program has to first be converted into a hyperstream).  
+(In Llucid the globals appearing to the right of @is& also have @active
+implicitly applied).  In a sense LLucid makes Lucid
+respectable again, though it is still not simply Iswim.
+.SP 12
+.SH
+7. STRETCHING FUNCTIONS
+.PP
+So far we have considered what happens to nullaries (how
+their values are dimensionally 'stretched') when they are
+used inside a subcomputation.  Obviously, we may want to
+use user defined functions (like @avg&) defined outside a subcomputation on the
+inside. It is easy to see that they have to be stretched
+somehow to avoid dimensional mismatch. For example, if outside 
+@@f(x) = G& and @f is used unaltered inside, the effect is to 'smuggle'
+@G past the stretching process. The results can be mindboggling.
+.PP
+It is perhaps not so obvious !how to stretch a function. 
+The basic idea is to regard a function $f as a hyper stream $F 
+of stream functions (with the
+value of $F independent of $$t0&, ie locally constant). 
+Then the value that @f(x) has at time $$t0,t1,t2 ... &
+is the result of applying the
+stream function $$F sub t1,t2 ... &
+to the stream 
+.EQ
+<x sub 0, t1,t2...,
+x sub 1, t1,t2...,
+x sub 2, t1,t2...,...>
+.EN
+and taking the $$t0& component.
+.PP
+Inside a subcomputation, @f should correspond to
+exactly the same function as it is outside; at internal time 
+$$t0,t1,t2 ... &
+the 'stretched' @f should correspond to the stream
+function $$F sub t2,t3 ... &.
+These considerations lead us the following equation for
+the stretch $F' of a (unary) function $F:
+given any hyperstream $x and any 
+hypertimepoint $$t0,t1,t2 ...&,
+.EQ
+ F'(x) sub t0,t1,t2... ~=~ 
+  F(x') sub t0,t2,t3 ...
+.EN
+where
+.EQ
+  x' sub r0,r1,r2 ~=~
+  x sub r0,t1,t2 ...
+.EN
+for any hypertimepoint $$r0,r1,r2...&.
+.PP
+The stretch of a function defined !without special Llucid
+operations (that is, whose definition is an ordinary Lucid definition) is
+(speaking informally) the same as the original except that
+the globals of the definition are stretched; in other words,
+it is the function defined when the definition is moved inside
+the where (assuming no clashes of variables). If there are
+no globals, stretching has no effect (in particular, usual
+Lucid operations like @first and @next are immune to
+stretching).  (Thus variables cannot escape stretching by
+entering as globals of function definitions).  However, if a function is
+defined !with LLucid operations stretching may 'deform' it;
+because such functions in general !cannot be though of as
+hyperstreams of stream functions. (In actual practice they are left untouched
+because !constants are not stretched; but if the user had a
+definition @@G(x) = Next Next x&, @G would not give the expected result inside).
+.SP 13
+.SH
+8. THE HYPERSTREAM PRIMITIVES
+.PP
+LLucid makes possible a wide variety of interfaces between
+the main computation and the subcomputation which can be
+specified with operations other than @Current and @Remaining&.
+The two most important primitives  are the 'level 1'
+analogs of the ordinary ('level 0') Lucid operations @next
+and @fby&.  They are  @Next  and @Fby  where
+.EQ I
+  Next(y) sub t0,t1,t2,..., ~=~
+   y sub t0, (t1+1) t2, ...,
+.EN
+.EQ I
+  Fby(y,z) sub t0, t1, t2, ..., ~=~ mark
+  y sub t0, 0, t2, t3, ...,~~(t1,=0)
+.EN
+.EQ I
+  Fby(y,z) sub t0, t1, t2, ..., ~=~ lineup
+    z sub t0,(t1,-1),t2,...,~~(t1,>0)
+.EN
+In terms of double sequences, @Next transforms the double sequence
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into the double sequence
+.EQ
+  <<b0,b1,b2,...>,
+   <c0,c1,c2,...>,
+   <d0,d1,d2,...>...>
+.EN
+In other words, the sequence of values taken on by @Next(x) in
+the present invocation of a subcomputation is the range of
+values @x takes on in the !next (succeeding) subcomputation.
+Similarly, @Fby transforms the double sequences
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+and
+.EQ
+  <<x0,x1,x2,...>,
+   <y0,y1,y2,...>,
+   <z0,z1,z2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a1,a2,...>,
+   <x0,x1,x2,...>,
+   <y0,y1,y2,...>,...>
+.EN
+Thus the range of values taken on by @@x Fby y& in  the first
+invocation of a given sub computation is that taken on by @x,
+but thereafter (ie in succeeding subcomputations) that taken on by
+@y in the previous subcomputation.  We also have a
+level one analog of first (we call it Original) which
+transforms the double sequence
+.EQ
+  <<a0,a1,a2,...>,
+   <b0,b1,b2,...>,
+   <c0,c1,c2,...>,...>
+.EN
+into
+.EQ
+  <<a0,a1,a2,...>,
+   <a0,a1,a2,...>,
+   <a0,a1,a2,>,...>
+.EN
+so that the range of values taken on by Original(x) during a
+given subcomputation is that taken on by @x in the first
+(original) subcomputation.
+.PP
+It is not hard to see how the other operations can be
+defined with @Next and @Fby&. The operation @Remaining has the
+definition
+.PH
+ Remaining x = x Fby next Remaining x;
+.PE
+and @Current the definition
+.PH
+ Current x = first Remaining x;
+.PE
+Notice that it follows directly from this definition that
+.PH
+ first Current x = Current x,;
+.PE
+In other words, within a given subcomputation  @@Current x&  is
+constant (we called objects constant in $$t0,& !quiescent -
+temporarily unchanging).
+.SP 14
+.SH
+9. NESTED 'I/O' WITH HYPERFILTERS
+.PP
+The need for nonstandard computation/subcomputation
+interfaces arise often and naturally when programming in Lucid.  
+In Llucid we can specify these interfaces more directly.  
+For example, often we want a
+subcomputation to process an initial segment of a stream
+then on the next subcomputation pick up where it left off 
+as in the case of lexical analysis mentioned earlier).
+As a simpler example, suppose that 
+we have a stream of nonnegative integers and we want to
+produce for each 0 a sum of all integers encountered since the
+last 0; so that
+.EQ
+ 2, 4, 0, 6, 0, 0, 5, 4, 7, 8, 0, ...
+.EN
+should be transformed into
+.EQ
+ 6, 6, 0, 24, ... .
+.EN
+In ordinary Lucid we must simulate such interfaces with @whenever
+and @upon&; as in
+.PR
+ sum wvr n eq 0
+  where
+   sum = 0 fby if n ne 0 then sum+n else 0 fi;
+  end
+.PE
+In LLucid we can do this more directly:
+.PR
+ sum asa y eq 0
+  where
+   sum = 0 fby sum+y;
+   y = x Fby y after y eq 0;
+  end
+.PE
+Here @after is a conventional Lucid function (used as an infix operator)
+which delivers all the values of its first operand which appears
+!after the second is true for the first time; it has the
+definition
+.PH
+ y after p = if first p then next y  else (next y) after next p;
+.PE
+As another example, suppose that as before we are required
+to produce a stream of sums, but that now instead of
+!terminating each group of summands with a 0, the user gives
+before each group the number of numbers in the group; thus
+the input corresponding to the one given earlier would be
+.EQ
+ 2, 2, 4, 1, 6, 0, 4, 5, 4, 7, 8, ...
+.EN
+and the output should be as before.  The program in Llucid
+is
+.PR
+ S asa k eq 1
+   where
+    k = y fby k-1;
+    y = x Fby y after k eq 1;
+    S = 0 fby S + next y;
+   end
+.PE
+As another example, suppose that @C is a stream of letters
+and blank characters and that we wish to produce a stream 
+of 'bundled' identifiers in @C&, ie a stream of lists of
+contiguous nonblank characters in @C&.  Thus if @C& is of the form
+.EQ
+ 'f', 'e', 'r', 'd', ' ', ' ', 'b', 'l', 'e', 'e', 'n', ' ', ...
+.EN
+then the output of the program should be of the form
+.EQ
+ ['f' 'e' 'r' 'd'], ['b' 'l' 'e' 'e' 'n'], ...
+.EN
+In Llucid this could be done as
+.PR
+ W asa D eq ' '
+  where
+   D = (C after next C ne ' ') Fby D after D eq ' ' and next D ne ' ';
+   W = [] fby  W :: [%C%];
+  end
+.PE
+These are examples in which the subcomputation/computation
+interface is such that !several values of the input stream
+(the input to the subcomputation) are involved in !one
+output.  These subcomputations correspond to loops in imperative
+languages which have @read statements inside and which read
+in several values during each iteration (naturally neither
+Lucid nor Llucid has read stats).  Sometimes, however, we
+may want a particular invocation of a subcomputation to
+produce more than one value of the output stream for each
+invocation.  This is again inconvenient in ordinary Lucid
+(requires @whenever and @upon&) but can be done easily in
+Llucid with an appropriate operation.  The required
+operation is called @until&; the value of  @@x until p& is
+obtained by stringing together initial segments of @x (ie
+initial segments for different successive values of $$t1&)
+consisting of those values up to but not including the time
+that @p is first true.  The function @until (@until is used as an
+infix operator) is defined by the equation
+.PH
+ x Until p = if First first p then (Next x Until Next p) else
+                 First first x fby (next x Until next p) fi
+.PE
+In terms of double streams, @until transforms
+
+ <<x0,x1,x2,..>
+  <y0,y1,y2,..>
+  <z0,z1,z2,..>
+  ...
+ >
+ 
+and
+
+ <<false,true,...>,
+   <false,false,false,true,...>,
+   <false,false,true,...>,
+  ...>
+
+into
+.EQ
+ <<x0,y0,y1,y2,z0,z1,...><x0,y0,y1,y2,z0,z1,...>,...>
+.EN
+Here, for example, is a program whose value is the stream
+of binary digits of the numbers in the input stream @n&, each
+group of digits being preceded by @"newline"&.
+.PR
+ ("newline" fby digit) until (false fby k eq 0)
+   where
+    k = current n fby k/2;
+    digit = k mod 2;
+   end
+.PE
+If the input stream $n is of the form
+.EQ
+ 4, 3, 5, 2, ...
+.EN
+then the output of the program will be of the form
+.EQ
+ "newline", 0, 0, 1, "newline", 1, 1, "newline", 1, 0, 1, "newline", 0, 1, ...
+.EN
+.NB [ $x provided $p ?]
+.SP 16
+.SH
+10. USER DEFINED HYPERFILTERS
+.PP
+These hyper-operations, like until, are so useful the Llucid user would
+undoubtedly want to define his own. Unfortunately, this is
+not really possible, even though there is no restriction
+preventing Llucid function from appearing in user function definitions.
+The problem is that do-it-yourself superoperations cannot be imported
+inside where clauses; because (as we mentioned earlier)
+they will be distorted by
+stretching.  For example, the user could have a definition of until, and
+it would work fine within same clause where it is defined. 
+But in inner clauses, it will act very strange because it
+will have been stretched - treated as if it were 'really' a 
+hyperstream of stream functions, which it is not. 
+As a result, user definitions are useless, because
+they have to be copied out everywhere they are used.
+.PP
+Another serious problem arises when we want to use a
+where clause in defining one of these superfunctions.
+For example, it seems so natural to replace the definition of @remaining
+.PH
+ Remaining x = x Fby next Remaining x;
+.PE
+by
+.PH
+ Remaining x = y where y = x Fby next y end;
+.PE
+but it will not work work; @x has been stretched and @y compressed,
+and @remaining is not defined as desired.  Of course the
+problem is even worse when we want to use a where to
+give a recursive definition (of a do-it-yourself hyper-operation); 
+the function being defined gets stretched
+in its own definition; certainly not what is wanted.
+.PP
+The second part of this problem can be solved quite easily;
+we add another form of the where clause to the language, say
+@wherereally that acts normally and does not perform any
+stretching.  We could then define the current function by
+.PR
+ Current x = first r
+   wherereally
+    r = x Fby next r;
+   end;
+.PE
+However, this still does not solve the problem that functions like
+this, even when they are defined correctly, cannot be used
+inside an ordinary where (they can be used inside a
+wherereally but the wherereally does not provide a
+computation/subcomputation interface.  One obvious ad hoc solution is
+to let the user of a where clause specify a list of
+variables which are to be imported 'live', ie without
+stretching.  This is can be very tedious (a function used several
+levels deep must be declared at each intervening level)
+and anyway opens the door to the dread 'dimensional shift'
+.PP
+The language LLucid described here adopts the simplest
+viable resolution of the trouble, namely by providing a
+fixed  set of two dimensional constants which (being
+constants) have 'diplomatic immunity' from stretching.  
+These constants by themselves are, as we have seen, enough to provide a rich
+variety of interfaces and provide a disciplined form of 
+dimensional manipulation.
+.PP
+The best solution would be to devise a convenient way to
+specify subcomputations strictly within a member of the
+Iswim family.  Iswim(HyLu(A)) is tantalizingly close,
+but the goal remains outside our grasp.

@@ -1,0 +1,63 @@
+.SP 12
+.SH
+7. STRETCHING FUNCTIONS
+.PP
+So far we have considered what happens to nullaries (how
+their values are dimensionally 'stretched') when they are
+used inside a subcomputation.  Obviously, we may want to
+use user defined functions (like @avg&) defined outside a subcomputation on the
+inside. It is easy to see that they have to be stretched
+somehow to avoid dimensional mismatch. For example, if outside 
+@@f(x) = G& and @f is used unaltered inside, the effect is to 'smuggle'
+@G past the stretching process. The results can be mindboggling.
+.PP
+It is perhaps not so obvious !how to stretch a function. 
+The basic idea is to regard a function $f as a hyper stream $F 
+of stream functions (with the
+value of $F independent of $$t0&, ie locally constant). 
+Then the value that @f(x) has at time $$t0,t1,t2 ... &
+is the result of applying the
+stream function $$F sub t1,t2 ... &
+to the stream 
+.EQ
+<x sub 0, t1,t2...,
+x sub 1, t1,t2...,
+x sub 2, t1,t2...,...>
+.EN
+and taking the $$t0& component.
+.PP
+Inside a subcomputation, @f should correspond to
+exactly the same function as it is outside; at internal time 
+$$t0,t1,t2 ... &
+the 'stretched' @f should correspond to the stream
+function $$F sub t2,t3 ... &.
+These considerations lead us the following equation for
+the stretch $F' of a (unary) function $F:
+given any hyperstream $x and any 
+hypertimepoint $$t0,t1,t2 ...&,
+.EQ
+ F'(x) sub t0,t1,t2... ~=~ 
+  F(x') sub t0,t2,t3 ...
+.EN
+where
+.EQ
+  x' sub r0,r1,r2 ~=~
+  x sub r0,t1,t2 ...
+.EN
+for any hypertimepoint $$r0,r1,r2...&.
+.PP
+The stretch of a function defined !without special Llucid
+operations (that is, whose definition is an ordinary Lucid definition) is
+(speaking informally) the same as the original except that
+the globals of the definition are stretched; in other words,
+it is the function defined when the definition is moved inside
+the where (assuming no clashes of variables). If there are
+no globals, stretching has no effect (in particular, usual
+Lucid operations like @first and @next are immune to
+stretching).  (Thus variables cannot escape stretching by
+entering as globals of function definitions).  However, if a function is
+defined !with LLucid operations stretching may 'deform' it;
+because such functions in general !cannot be though of as
+hyperstreams of stream functions. (In actual practice they are left untouched
+because !constants are not stretched; but if the user had a
+definition @@G(x) = Next Next x&, @G would not give the expected result inside).

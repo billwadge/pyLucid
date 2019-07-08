@@ -1,0 +1,10 @@
+R
+where
+ R = a asa abs a*a -N <0.00001
+  whereloop
+   N is current n;
+   a = 1 fby (a+N/a)/2;
+  end;
+ n = 1 fby n+1;
+ rows = 10;
+end
